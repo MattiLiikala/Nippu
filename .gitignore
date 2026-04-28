@@ -1,0 +1,8 @@
+node_modules
+dist
+nippu.db
+nippu.db-shm
+nippu.db-wal
+.env
+.DS_Store
+nippu_extracted
