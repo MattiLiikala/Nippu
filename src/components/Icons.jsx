@@ -150,6 +150,19 @@ export function IconSets() {
   )
 }
 
+export function IconGrip() {
+  return (
+    <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor">
+      <circle cx="4.5" cy="3.5" r="1.5" />
+      <circle cx="9.5" cy="3.5" r="1.5" />
+      <circle cx="4.5" cy="8" r="1.5" />
+      <circle cx="9.5" cy="8" r="1.5" />
+      <circle cx="4.5" cy="12.5" r="1.5" />
+      <circle cx="9.5" cy="12.5" r="1.5" />
+    </svg>
+  )
+}
+
 export function Logo({ size = 70 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 38 38" fill="none">

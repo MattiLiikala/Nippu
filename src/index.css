@@ -11,7 +11,7 @@
   --surface2:  #F0EDE6;
   --border:    #E8E4DC;
   --text:      #1C1A16;
-  --text2:     #7A7368;
+  --text2:     #56554c;
   --accent:    #55868C;
   --accent-lt: #E8E3D4;
   --accent-dk: #2e5c61;
@@ -42,7 +42,7 @@
 
 html, body {
   height: 100%;
-  font-family: 'Figtree', sans-serif;
+  font-family: 'Overlock', sans-serif;
   background: var(--bg);
   color: var(--text);
 }
@@ -110,30 +110,31 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0 8px 8px;
   flex-shrink: 0;
 }
 .nav-item {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 3px;
   padding: 8px 20px;
-  border-radius: 999px;
   cursor: pointer;
   transition: background 0.2s var(--ease);
   -webkit-user-select: none;
   user-select: none;
+  width: -webkit-fill-available;
+  height: inherit;
 }
-.nav-item.active { background: var(--accent-lt); }
+.nav-item.active { background: var(--bg); }
 .nav-icon { width: 24px; height: 24px; }
-.nav-label { font-size: 11px; font-weight: 600; color: var(--text2); }
+.nav-label { font-size: 14px; font-weight: 600; color: var(--text2); }
 .nav-item.active .nav-label { color: var(--accent-dk); }
 
 /* ── FAB ───────────────────────────────────────────── */
 .fab {
   position: absolute;
-  bottom: calc(var(--nav-h) + 12px);
+  bottom: 12px;
   right: 20px;
   width: 56px;
   height: 56px;
@@ -156,7 +157,7 @@ html, body {
 
 .fab-menu {
   position: absolute;
-  bottom: calc(var(--nav-h) + 76px);
+  bottom: 76px;
   right: 20px;
   display: flex;
   flex-direction: column;
@@ -233,7 +234,7 @@ html, body {
   color: #fff;
   border: none;
   border-radius: 999px;
-  font-family: 'Figtree', sans-serif;
+  font-family: 'Overlock', sans-serif;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -251,7 +252,7 @@ html, body {
   color: var(--text);
   border: 1.5px solid var(--border);
   border-radius: 999px;
-  font-family: 'Figtree', sans-serif;
+  font-family: 'Overlock', sans-serif;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -268,7 +269,7 @@ html, body {
   background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
-  font-family: 'Figtree', sans-serif;
+  font-family: 'Overlock', sans-serif;
   font-size: 16px;
   color: var(--text);
   outline: none;
@@ -332,7 +333,7 @@ html, body {
   border: none;
   outline: none;
   background: transparent;
-  font-family: 'Figtree', sans-serif;
+  font-family: 'Overlock', sans-serif;
   font-size: 15px;
   color: var(--text);
 }
@@ -384,7 +385,7 @@ html, body {
   border: none;
   border-radius: 999px;
   padding: 6px 14px;
-  font-family: 'Figtree', sans-serif;
+  font-family: 'Overlock', sans-serif;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;

@@ -44,9 +44,6 @@ export default function LoginScreen() {
             fontFamily: "'Leckerli One', cursive", fontSize: 40, fontWeight: 400,
             color: 'var(--text)', letterSpacing: '-1.5px', lineHeight: 1,
           }}>Nippu</h1>
-          <p style={{ fontSize: 15, color: 'var(--text2)', marginTop: 6, fontWeight: 500 }}>
-            Shared shopping, simplified
-          </p>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -59,7 +56,7 @@ export default function LoginScreen() {
               className="input-field"
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="e.g. Smith Household"
+              placeholder="e.g. Baggins Household"
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
               disabled={busy}
             />

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useStore } from '../store/useStore'
-import BottomNav from '../components/BottomNav'
 import RecipeDetailScreen from './RecipeDetailScreen'
 import AddToListScreen from './AddToListScreen'
 import EditRecipeScreen from './EditRecipeScreen'
@@ -11,7 +10,6 @@ export default function RecipesScreen() {
   const [view, setView] = useState('list')
   const [selected, setSelected] = useState(null)
   const [picked, setPicked] = useState({})
-  const [fabOpen, setFabOpen] = useState(false)
   const [query, setQuery] = useState('')
 
   const filtered = query
@@ -113,31 +111,15 @@ export default function RecipesScreen() {
         )}
       </div>
 
-      {/* FAB */}
-      {fabOpen && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 14 }} onClick={() => setFabOpen(false)} />
-      )}
-      {fabOpen && (
-        <div className="fab-menu">
-          <div className="fab-menu-item" onClick={() => { setFabOpen(false); setSelected(null); setView('edit') }}>
-            <span className="fab-menu-label">New recipe</span>
-            <div className="fab-mini">+</div>
-          </div>
-          <div className="fab-menu-item" onClick={() => setFabOpen(false)}>
-            <span className="fab-menu-label">Import from URL</span>
-            <div className="fab-mini">↓</div>
-          </div>
-        </div>
-      )}
       <button
-        className={`fab${fabOpen ? ' open' : ''}`}
-        onClick={() => setFabOpen(o => !o)}
+        className="fab"
+        onClick={() => { setSelected(null); setView('edit') }}
         aria-label="New recipe"
       >
         <IconPlus />
       </button>
 
-      <BottomNav />
+
     </div>
   )
 }

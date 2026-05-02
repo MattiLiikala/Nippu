@@ -10,7 +10,7 @@ export default function AddToListScreen({ recipe, picked, onBack, onDone }) {
 
   const handleConfirm = () => {
     if (selectedList) {
-      addItemsFromSet(selectedList, pickedItems)
+      addItemsFromSet(selectedList, pickedItems.map(name => ({ name })))
       onDone()
     }
   }

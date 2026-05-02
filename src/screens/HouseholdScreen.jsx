@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
-import BottomNav from '../components/BottomNav'
+
 
 export default function HouseholdScreen() {
   const household = useStore(s => s.household)
@@ -86,9 +86,9 @@ export default function HouseholdScreen() {
         </div>
 
         <div className="section-header" style={{ marginTop: 24 }}>Danger zone</div>
-        <div className="card" style={{ borderLeft: '3px solid oklch(0.55 0.18 25)' }}>
+        <div className="card">
           <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 12 }}>
-            Leaving will remove your access to all shared lists.
+            When logging out, make sure you remember your password.
           </p>
           {showLeaveConfirm ? (
             <div style={{ display: 'flex', gap: 8 }}>
@@ -96,7 +96,7 @@ export default function HouseholdScreen() {
                 background: 'oklch(0.55 0.18 25)', color: '#fff', border: 'none',
                 borderRadius: 999, padding: '10px 20px', fontFamily: 'Figtree,sans-serif',
                 fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              }}>Yes, leave</button>
+              }}>Yes, log out</button>
               <button className="btn-ghost" style={{ padding: '10px 20px', width: 'auto', fontSize: 14 }} onClick={() => setShowLeaveConfirm(false)}>
                 Cancel
               </button>
@@ -106,12 +106,11 @@ export default function HouseholdScreen() {
               background: 'none', border: '1.5px solid oklch(0.55 0.18 25)',
               borderRadius: 999, padding: '10px 20px', fontFamily: 'Figtree,sans-serif',
               fontSize: 14, fontWeight: 600, color: 'oklch(0.55 0.18 25)', cursor: 'pointer',
-            }}>Leave household</button>
+            }}>Log out</button>
           )}
         </div>
       </div>
 
-      <BottomNav />
     </div>
   )
 }

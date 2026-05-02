@@ -81,10 +81,57 @@ export const useStore = create(
       },
 
       // ── List items ────────────────────────────────────
-      async addItem(listId, name) {
-        const item = await api(`/lists/${listId}/items`, { method: 'POST', body: { name } })
+      async addItem(listId, name, category = null) {
+        const item = await api(`/lists/${listId}/items`, { method: 'POST', body: { name, category } })
         set(s => ({ lists: s.lists.map(l => l.id === listId ? { ...l, items: [...l.items, item] } : l) }))
         return item
+      },
+
+      async renameCategory(listId, oldName, newName) {
+        set(s => ({
+          lists: s.lists.map(l => l.id === listId ? {
+            ...l,
+            items: l.items.map(i => i.category === oldName ? { ...i, category: newName } : i),
+          } : l),
+        }))
+        try {
+          await api(`/lists/${listId}/categories`, { method: 'PATCH', body: { oldName, newName } })
+        } catch {
+          await get().fetchAll()
+        }
+      },
+
+      async renameSetCategory(listId, setId, oldName, newName) {
+        set(s => ({
+          sets: {
+            ...s.sets,
+            [listId]: (s.sets[listId] || []).map(st =>
+              st.id === setId ? {
+                ...st,
+                items: st.items.map(i => i.category === oldName ? { ...i, category: newName } : i),
+              } : st
+            ),
+          },
+        }))
+        try {
+          await api(`/lists/${listId}/sets/${setId}/categories`, { method: 'PATCH', body: { oldName, newName } })
+        } catch {
+          await get().fetchSetsForList(listId)
+        }
+      },
+
+      async updateItemCategory(listId, itemId, category) {
+        set(s => ({
+          lists: s.lists.map(l => l.id === listId ? {
+            ...l,
+            items: l.items.map(i => i.id === itemId ? { ...i, category: category ?? null } : i),
+          } : l),
+        }))
+        try {
+          await api(`/lists/${listId}/items/${itemId}`, { method: 'PATCH', body: { category } })
+        } catch {
+          await get().fetchAll()
+        }
       },
 
       async removeItem(listId, itemId) {
@@ -96,9 +143,60 @@ export const useStore = create(
         set(s => ({ lists: s.lists.map(l => l.id === listId ? { ...l, items: [item, ...l.items] } : l) }))
       },
 
-      async addItemsFromSet(listId, names) {
-        const items = await api(`/lists/${listId}/items/bulk`, { method: 'POST', body: { names } })
-        set(s => ({ lists: s.lists.map(l => l.id === listId ? { ...l, items: [...l.items, ...items] } : l) }))
+      async addItemsFromSet(listId, items) {
+        const newItems = await api(`/lists/${listId}/items/bulk`, { method: 'POST', body: { items } })
+        set(s => ({ lists: s.lists.map(l => l.id === listId ? { ...l, items: [...l.items, ...newItems] } : l) }))
+      },
+
+      async reorderListItems(listId, idsInOrder) {
+        set(s => ({
+          lists: s.lists.map(l => l.id === listId ? {
+            ...l,
+            items: l.items.map(i => {
+              const newOrd = idsInOrder.indexOf(i.id)
+              return newOrd >= 0 ? { ...i, ord: newOrd } : i
+            }),
+          } : l),
+        }))
+        try {
+          await api(`/lists/${listId}/items/reorder`, { method: 'PATCH', body: { ids: idsInOrder } })
+        } catch {
+          await get().fetchAll()
+        }
+      },
+
+      async updateListSectionOrder(listId, sectionOrder) {
+        const encoded = JSON.stringify(sectionOrder)
+        set(s => ({
+          lists: s.lists.map(l => l.id === listId ? { ...l, section_order: encoded } : l),
+        }))
+        try {
+          await api(`/lists/${listId}/sections/reorder`, { method: 'PATCH', body: { order: sectionOrder } })
+        } catch {
+          await get().fetchAll()
+        }
+      },
+
+      async reorderSetItems(listId, setId, idsInOrder) {
+        set(s => ({
+          sets: {
+            ...s.sets,
+            [listId]: (s.sets[listId] || []).map(st =>
+              st.id === setId ? {
+                ...st,
+                items: st.items.map(i => {
+                  const newOrd = idsInOrder.indexOf(i.id)
+                  return newOrd >= 0 ? { ...i, ord: newOrd } : i
+                }),
+              } : st
+            ),
+          },
+        }))
+        try {
+          await api(`/lists/${listId}/sets/${setId}/items/reorder`, { method: 'PATCH', body: { ids: idsInOrder } })
+        } catch {
+          await get().fetchSetsForList(listId)
+        }
       },
 
       // ── Sets ──────────────────────────────────────────
@@ -108,8 +206,8 @@ export const useStore = create(
         return set_.id
       },
 
-      async addItemToSet(listId, setId, name) {
-        const item = await api(`/lists/${listId}/sets/${setId}/items`, { method: 'POST', body: { name } })
+      async addItemToSet(listId, setId, name, category = null) {
+        const item = await api(`/lists/${listId}/sets/${setId}/items`, { method: 'POST', body: { name, category } })
         set(s => ({
           sets: {
             ...s.sets,
@@ -118,6 +216,25 @@ export const useStore = create(
             ),
           },
         }))
+      },
+
+      async updateSetItemCategory(listId, setId, itemId, category) {
+        set(s => ({
+          sets: {
+            ...s.sets,
+            [listId]: (s.sets[listId] || []).map(st =>
+              st.id === setId ? {
+                ...st,
+                items: st.items.map(i => i.id === itemId ? { ...i, category: category ?? null } : i),
+              } : st
+            ),
+          },
+        }))
+        try {
+          await api(`/lists/${listId}/sets/${setId}/items/${itemId}`, { method: 'PATCH', body: { category } })
+        } catch {
+          await get().fetchSetsForList(listId)
+        }
       },
 
       async removeItemFromSet(listId, setId, itemId) {

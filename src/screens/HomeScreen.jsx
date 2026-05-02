@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
-import BottomNav from '../components/BottomNav'
 import { IconPlus, IconChevron } from '../components/Icons'
 
 export default function HomeScreen() {
@@ -12,7 +11,6 @@ export default function HomeScreen() {
   const renameHousehold = useStore(s => s.renameHousehold)
   const addList = useStore(s => s.addList)
 
-  const [fabOpen, setFabOpen] = useState(false)
   const [editing, setEditing] = useState(false)
   const [nameVal, setNameVal] = useState(household?.name || 'My Household')
   const [newListOpen, setNewListOpen] = useState(false)
@@ -104,23 +102,9 @@ export default function HomeScreen() {
         )}
       </div>
 
-      {fabOpen && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 14 }} onClick={() => setFabOpen(false)} />
-      )}
-      {fabOpen && (
-        <div className="fab-menu">
-          <div className="fab-menu-item" onClick={() => { setFabOpen(false); setNewListOpen(true) }}>
-            <span className="fab-menu-label">New list</span>
-            <div className="fab-mini">+</div>
-          </div>
-        </div>
-      )}
-
-      <button className={`fab${fabOpen ? ' open' : ''}`} onClick={() => setFabOpen(o => !o)} aria-label="New list">
+      <button className="fab" onClick={() => setNewListOpen(true)} aria-label="New list">
         <IconPlus />
       </button>
-
-      <BottomNav />
 
       {newListOpen && (
         <>

@@ -76,4 +76,19 @@ db.exec(`
   );
 `)
 
+// Safe column migrations — no-op if column already exists
+;(function migrate() {
+  const addCol = (table, col, def) => {
+    const cols = db.pragma(`table_info(${table})`)
+    if (!cols.find(c => c.name === col)) {
+      db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${def}`)
+    }
+  }
+  addCol('list_items', 'category', 'TEXT')
+  addCol('list_items', 'ord', 'INTEGER DEFAULT 0')
+  addCol('set_items', 'category', 'TEXT')
+  addCol('set_items', 'ord', 'INTEGER DEFAULT 0')
+  addCol('lists', 'section_order', 'TEXT')
+})()
+
 export default db

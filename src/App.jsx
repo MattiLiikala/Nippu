@@ -6,6 +6,7 @@ import HomeScreen from './screens/HomeScreen'
 import ListScreen from './screens/ListScreen'
 import RecipesScreen from './screens/RecipesScreen'
 import HouseholdScreen from './screens/HouseholdScreen'
+import BottomNav from './components/BottomNav'
 import { IconSun, IconMoon } from './components/Icons'
 
 function DarkToggle() {
@@ -77,6 +78,7 @@ export default function App() {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <DarkToggle />
       <AppRoutes />
+      <BottomNav />
     </div>
   )
 }
