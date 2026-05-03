@@ -42,30 +42,26 @@ npm install
 npm run dev
 ```
 
-This starts both the Vite dev server (port 5173) and the Express API (port 3001) concurrently. The API uses a local SQLite file (`nippu.db`) when `TURSO_DATABASE_URL` is not set.
+This starts both the Vite dev server (port 5173) and the Express API (port 3001) concurrently.
 
 Create a `.env` file in the project root:
 
 ```
 JWT_SECRET=your-secret-here
+DATABASE_URL=postgresql://localhost/nippu
 PORT=3001
 ```
+
+`DATABASE_URL` can point to a local Postgres instance or directly to the Netlify/Neon connection string.
 
 ## Deployment (Netlify)
 
 The frontend is served as static files from `dist/`. The backend runs as a Netlify Function (`netlify/functions/api.js`) that wraps the Express app with `serverless-http`. All `/api/*` requests are redirected to the function via `netlify.toml`.
 
-The database uses [Turso](https://turso.tech) (a serverless SQLite-compatible cloud database). Set these environment variables in the Netlify dashboard:
+The database is Netlify's built-in Postgres (Neon-backed). Enable it in the Netlify dashboard under **Integrations → Postgres** — the `DATABASE_URL` environment variable is then injected automatically. Add one more variable manually:
 
 ```
 JWT_SECRET=your-secret-here
-TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=your-token-here
 ```
 
-To create a Turso database:
-```bash
-turso db create nippu
-turso db show nippu        # get the URL
-turso db tokens create nippu  # get the auth token
-```
+The build command (`npm run build && node scripts/init-db.js`) creates all tables and runs any column migrations automatically on every deploy, so no manual schema setup is needed.

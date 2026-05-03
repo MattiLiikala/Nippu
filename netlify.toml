@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build"
+  command = "npm run build && node scripts/init-db.js"
   publish = "dist"
   functions = "netlify/functions"
 
