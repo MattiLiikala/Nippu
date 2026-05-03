@@ -6,3 +6,6 @@ nippu.db-wal
 .env
 .DS_Store
 nippu_extracted
+.agents
+.claude
+skills-lock.json

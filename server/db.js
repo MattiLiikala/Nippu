@@ -1,10 +1,11 @@
-import pg from 'pg'
-const { Pool } = pg
+import { Pool } from '@neondatabase/serverless'
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL,
-  max: 1, // one connection per serverless instance is safe and avoids exhausting the pool
+  max: 1,
 })
+
+export const closeDb = () => pool.end()
 
 // Convert SQLite-style ? placeholders to Postgres $1, $2, ...
 function positional(sql) {
