@@ -1,12 +1,12 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import SetsDrawer from './SetsDrawer'
 import {
-  DndContext, DragOverlay,
+  DndContext, DragOverlay, MeasuringStrategy,
   PointerSensor, TouchSensor,
   useSensor, useSensors,
-  closestCenter, useDroppable,
+  closestCenter,
 } from '@dnd-kit/core'
 import {
   SortableContext, useSortable, arrayMove,
@@ -16,35 +16,15 @@ import { CSS } from '@dnd-kit/utilities'
 import { EditableSectionHeader } from '../components/DragDrop'
 import { IconBack, IconCheck, IconMore, IconSets, IconGrip } from '../components/Icons'
 
-// ── Custom collision: filter droppables by drag type ────
-function customCollision(args) {
-  const { active, droppableContainers } = args
-  const isSection = active.data.current?.type === 'section'
-  return closestCenter({
-    ...args,
-    droppableContainers: droppableContainers.filter(c => {
-      const id = c.id.toString()
-      return isSection ? id.startsWith('sec:') : !id.startsWith('sec:')
-    }),
-  })
-}
-
 // ── Sortable item ────────────────────────────────────────
 
 function SortableItem({ item, removing, onCheck }) {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging, transform, transition } = useSortable({
-    id: item.id,
-    data: { type: 'item', category: item.category ?? null },
-  })
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging, transform, transition } = useSortable({ id: item.id })
   return (
     <div
       ref={setNodeRef}
       className={`item-row${removing === item.id ? ' removing' : ''}`}
-      style={{
-        opacity: isDragging ? 0 : 1,
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }}
+      style={{ opacity: isDragging ? 0 : 1, transform: CSS.Transform.toString(transform), transition }}
     >
       <div className={`check-circle${removing === item.id ? ' done' : ''}`} onClick={() => onCheck(item)}>
         {removing === item.id && <IconCheck />}
@@ -79,45 +59,31 @@ function ItemOverlay({ item }) {
   )
 }
 
-// ── Sortable section container ───────────────────────────
+// ── Sortable section header ──────────────────────────────
 
-function SortableSectionContainer({ cat, items: sectionItems, activeId, onRename, children }) {
-  const { attributes, listeners, setNodeRef: sortableRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
-    id: `sec:${cat}`,
-    data: { type: 'section', cat },
-  })
-  const { setNodeRef: droppableRef, isOver } = useDroppable({ id: `cat:${cat}` })
-
-  const setRef = useCallback((el) => { sortableRef(el); droppableRef(el) }, [sortableRef, droppableRef])
-
+function SortableSectionHeader({ id, name, onRename }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id })
   return (
     <div
-      ref={setRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition: transition ?? 'background 0.15s, outline-color 0.15s',
-        opacity: isDragging ? 0.4 : 1,
-        borderRadius: 'var(--radius-md)',
-        background: isOver ? 'var(--accent-lt)' : 'transparent',
-        outline: isOver ? '2px solid var(--accent)' : '2px solid transparent',
-        outlineOffset: 2,
-        marginBottom: 2,
-      }}
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
     >
       <EditableSectionHeader
-        name={cat}
+        name={name}
         onRename={onRename}
         sectionDrag={{ ref: setActivatorNodeRef, listeners, attributes }}
       />
-      <SortableContext items={sectionItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
-        {children}
-      </SortableContext>
-      {sectionItems.length === 0 && activeId && activeId.toString().startsWith('sec:') === false && (
-        <div style={{
-          height: 44, borderRadius: 'var(--radius-sm)',
-          border: '2px dashed var(--border)', margin: '4px 0',
-        }} />
-      )}
+    </div>
+  )
+}
+
+// "Other" header — sortable drop target but not draggable (no handle)
+function OtherSectionHeader() {
+  const { setNodeRef, transform, transition } = useSortable({ id: 'sec:' })
+  return (
+    <div ref={setNodeRef} style={{ transform: CSS.Transform.toString(transform), transition }}
+      className="section-header">
+      Other
     </div>
   )
 }
@@ -157,7 +123,7 @@ export default function ListScreen() {
     </div>
   )
 
-  // Group items by category (sorted within each group by ord then created_at)
+  // Group items by category
   const grouped = {}
   const uncategorized = []
   for (const item of list.items) {
@@ -171,7 +137,6 @@ export default function ListScreen() {
   for (const cat of Object.keys(grouped)) sortGroup(grouped[cat])
   sortGroup(uncategorized)
 
-  // Section order: use saved section_order, fall back to alphabetical for new cats
   const savedOrder = list.section_order ? JSON.parse(list.section_order) : []
   const presentCats = Object.keys(grouped)
   const sortedCats = [
@@ -179,8 +144,23 @@ export default function ListScreen() {
     ...presentCats.filter(cat => !savedOrder.includes(cat)).sort(),
   ]
   const allNamedSections = [...sortedCats, ...emptySections.filter(s => !sortedCats.includes(s))]
-  const hasNamedSections = allNamedSections.length > 0
-  const activeItem = activeId && !activeId.toString().startsWith('sec:') ? list.items.find(i => i.id === activeId) : null
+
+  // Flat list: section headers and items interleaved in display order.
+  // When named sections exist, a non-draggable 'sec:' sentinel is inserted before
+  // uncategorized items so they have a reachable drop zone.
+  const flatList = [
+    ...allNamedSections.flatMap(cat => [
+      { id: `sec:${cat}`, type: 'section', name: cat },
+      ...(grouped[cat] || []),
+    ]),
+    ...(allNamedSections.length > 0
+      ? [{ id: 'sec:', type: 'section', name: null }, ...uncategorized]
+      : uncategorized),
+  ]
+
+  const activeItem = activeId && !activeId.toString().startsWith('sec:')
+    ? list.items.find(i => i.id === activeId)
+    : null
 
   // ── Handlers ──────────────────────────────────────────
 
@@ -222,7 +202,6 @@ export default function ListScreen() {
       setEmptySections(prev => prev.map(s => s === oldName ? newName : s))
     } else {
       renameCategory(list.id, oldName, newName)
-      // update saved section order to reflect rename
       if (savedOrder.includes(oldName)) {
         updateListSectionOrder(list.id, allNamedSections.map(s => s === oldName ? newName : s))
       }
@@ -236,52 +215,38 @@ export default function ListScreen() {
     setActiveId(null)
     if (!over || active.id === over.id) return
 
-    const isSection = active.data.current?.type === 'section'
+    const oldIdx = flatList.findIndex(e => e.id === active.id)
+    const newIdx = flatList.findIndex(e => e.id === over.id)
+    if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return
 
-    if (isSection) {
-      const activeCat = active.data.current.cat
-      const overCat = over.id.toString().replace(/^sec:/, '')
-      const oldIdx = allNamedSections.indexOf(activeCat)
-      const newIdx = allNamedSections.indexOf(overCat)
-      if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
-        const newOrder = arrayMove(allNamedSections, oldIdx, newIdx)
-        updateListSectionOrder(list.id, newOrder)
-      }
-      return
+    const movedEntry = flatList[oldIdx]
+
+    // The 'sec:' sentinel is not draggable
+    if (movedEntry.id === 'sec:') return
+
+    // Prevent items from landing before the first named section header
+    if (movedEntry.type !== 'section' && allNamedSections.length > 0) {
+      const firstSectionIdx = flatList.findIndex(e => e.type === 'section')
+      if (newIdx <= firstSectionIdx) return
     }
 
-    // Item drag
-    const item = list.items.find(i => i.id === active.id)
-    if (!item) return
+    const newFlat = arrayMove(flatList, oldIdx, newIdx)
 
-    const overId = over.id.toString()
-    const overIsCatDrop = overId.startsWith('cat:')
-    let targetCat
-    if (overIsCatDrop) {
-      targetCat = overId.replace('cat:', '') || null
-    } else {
-      const overItem = list.items.find(i => i.id === over.id)
-      targetCat = overItem ? (overItem.category ?? null) : null
+    // Update section display order
+    updateListSectionOrder(list.id, newFlat.filter(e => e.type === 'section').map(e => e.name))
+
+    // Only update the moved item's category — other items keep theirs unchanged
+    if (movedEntry.type !== 'section') {
+      let newCat = null
+      for (let i = newIdx - 1; i >= 0; i--) {
+        if (newFlat[i].type === 'section') { newCat = newFlat[i].name; break }
+      }
+      if (newCat !== (movedEntry.category ?? null)) {
+        updateItemCategory(list.id, movedEntry.id, newCat)
+      }
     }
 
-    const itemCat = item.category ?? null
-
-    if (itemCat === targetCat && !overIsCatDrop) {
-      // Sort within same section
-      const sectionItems = targetCat ? (grouped[targetCat] || []) : uncategorized
-      const oldIdx = sectionItems.findIndex(i => i.id === active.id)
-      const newIdx = sectionItems.findIndex(i => i.id === over.id)
-      if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
-        const newOrder = arrayMove(sectionItems, oldIdx, newIdx)
-        reorderListItems(list.id, newOrder.map(i => i.id))
-      }
-    } else if (itemCat !== targetCat) {
-      // Cross-section: change category
-      if (targetCat && emptySections.includes(targetCat)) {
-        setEmptySections(prev => prev.filter(s => s !== targetCat))
-      }
-      updateItemCategory(list.id, item.id, targetCat)
-    }
+    reorderListItems(list.id, newFlat.filter(e => e.type !== 'section').map(e => e.id))
   }
 
   // ── Render ────────────────────────────────────────────
@@ -303,87 +268,77 @@ export default function ListScreen() {
         <div style={{ cursor: 'pointer', padding: 4 }}><IconMore /></div>
       </div>
 
-      <div className="scroll-area" style={{ paddingTop: 4, paddingBottom: 120 }}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={customCollision}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDragCancel={handleDragCancel}
-        >
-          <SortableContext items={allNamedSections.map(cat => `sec:${cat}`)} strategy={verticalListSortingStrategy}>
-            {allNamedSections.map(cat => (
-              <SortableSectionContainer
-                key={cat}
-                cat={cat}
-                items={grouped[cat] || []}
-                activeId={activeId}
-                onRename={(newName) => handleRenameSection(cat, newName)}
-              >
-                {(grouped[cat] || []).map(item => (
-                  <SortableItem key={item.id} item={item} removing={removing} onCheck={handleCheck} />
-                ))}
-              </SortableSectionContainer>
-            ))}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+        autoScroll={{ layoutShiftCompensation: false }}
+      >
+        <div className="scroll-area" style={{ paddingTop: 4, paddingBottom: 120 }}>
+          <SortableContext items={flatList.map(e => e.id)} strategy={verticalListSortingStrategy}>
+            {flatList.map(entry => {
+              if (entry.id === 'sec:') return <OtherSectionHeader key="sec:" />
+              if (entry.type === 'section') return (
+                <SortableSectionHeader
+                  key={entry.id}
+                  id={entry.id}
+                  name={entry.name}
+                  onRename={newName => handleRenameSection(entry.name, newName)}
+                />
+              )
+              return <SortableItem key={entry.id} item={entry} removing={removing} onCheck={handleCheck} />
+            })}
           </SortableContext>
 
-          {/* Uncategorized — droppable but not sortable as a section */}
-          <UncategorizedSection hasNamedSections={hasNamedSections} activeId={activeId}>
-            <SortableContext items={uncategorized.map(i => i.id)} strategy={verticalListSortingStrategy}>
-              {uncategorized.map(item => (
-                <SortableItem key={item.id} item={item} removing={removing} onCheck={handleCheck} />
-              ))}
-            </SortableContext>
-          </UncategorizedSection>
+          {list.items.length === 0 && !lastRemoved && (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)', fontSize: 15, fontWeight: 500 }}>
+              All done! Add items below.
+            </div>
+          )}
 
-          <DragOverlay dropAnimation={null}>
-            {activeItem && <ItemOverlay item={activeItem} />}
-          </DragOverlay>
-        </DndContext>
-
-        {list.items.length === 0 && !lastRemoved && (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)', fontSize: 15, fontWeight: 500 }}>
-            All done! Add items below.
+          <div className="add-row" onClick={() => inputRef.current?.focus()}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round">
+              <line x1="9" y1="4" x2="9" y2="14" /><line x1="4" y1="9" x2="14" y2="9" />
+            </svg>
+            <input
+              ref={inputRef}
+              value={inputVal}
+              onChange={e => setInputVal(e.target.value)}
+              onKeyDown={handleAddItem}
+              placeholder="Add item…"
+            />
           </div>
-        )}
 
-        <div className="add-row" onClick={() => inputRef.current?.focus()}>
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round">
-            <line x1="9" y1="4" x2="9" y2="14" /><line x1="4" y1="9" x2="14" y2="9" />
-          </svg>
-          <input
-            ref={inputRef}
-            value={inputVal}
-            onChange={e => setInputVal(e.target.value)}
-            onKeyDown={handleAddItem}
-            placeholder="Add item…"
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-          <button
-            onClick={handleAddSection}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              background: 'transparent', color: 'var(--text2)',
-              border: '1.5px dashed var(--border)', borderRadius: 999, padding: '10px 16px',
-              fontFamily: 'Figtree,sans-serif', fontSize: 14, fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            + Section
-          </button>
-        </div>
-
-        {lastRemoved && (
-          <div className="undo-toast">
-            <span style={{ fontSize: 14, fontWeight: 500 }}>Removed: {lastRemoved.name}</span>
-            <button className="undo-btn" onClick={handleUndo}>Undo</button>
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <button
+              onClick={handleAddSection}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'transparent', color: 'var(--text2)',
+                border: '1.5px dashed var(--border)', borderRadius: 999, padding: '10px 16px',
+                fontFamily: 'Figtree,sans-serif', fontSize: 14, fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              + Section
+            </button>
           </div>
-        )}
-      </div>
 
-      {/* Floating "Add from sets" pill */}
+          {lastRemoved && (
+            <div className="undo-toast">
+              <span style={{ fontSize: 14, fontWeight: 500 }}>Removed: {lastRemoved.name}</span>
+              <button className="undo-btn" onClick={handleUndo}>Undo</button>
+            </div>
+          )}
+        </div>
+        <DragOverlay dropAnimation={null}>
+          {activeItem && <ItemOverlay item={activeItem} />}
+        </DragOverlay>
+      </DndContext>
+
       <button
         onClick={() => setDrawerOpen(true)}
         style={{
@@ -405,7 +360,6 @@ export default function ListScreen() {
         Saved items
       </button>
 
-
       {drawerOpen && (
         <SetsDrawer
           listId={list.id}
@@ -413,36 +367,6 @@ export default function ListScreen() {
           onAddItems={items => addItemsFromSet(list.id, items)}
           listCategories={allNamedSections}
         />
-      )}
-    </div>
-  )
-}
-
-function UncategorizedSection({ hasNamedSections, activeId, children }) {
-  const { setNodeRef, isOver } = useDroppable({ id: 'cat:' })
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        borderRadius: 'var(--radius-md)',
-        background: isOver ? 'var(--accent-lt)' : 'transparent',
-        outline: isOver ? '2px solid var(--accent)' : '2px solid transparent',
-        outlineOffset: 2,
-        transition: 'background 0.15s, outline-color 0.15s',
-        marginBottom: 2,
-      }}
-    >
-      {hasNamedSections && <div className="section-header">Other</div>}
-      {children}
-      {isOver && activeId && (
-        <div style={{
-          height: 44, borderRadius: 'var(--radius-sm)',
-          border: '2px dashed var(--border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 13, color: 'var(--text2)', margin: '4px 0',
-        }}>
-          Drop to remove category
-        </div>
       )}
     </div>
   )

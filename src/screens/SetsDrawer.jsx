@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useStore } from '../store/useStore'
 import {
-  DndContext, DragOverlay,
+  DndContext, DragOverlay, MeasuringStrategy,
   PointerSensor, TouchSensor,
   useSensor, useSensors,
-  closestCenter, useDroppable,
+  closestCenter,
 } from '@dnd-kit/core'
 import {
   SortableContext, useSortable, arrayMove,
@@ -14,26 +14,10 @@ import { CSS } from '@dnd-kit/utilities'
 import { EditableSectionHeader } from '../components/DragDrop'
 import { IconCheck, IconClose, IconTrash, IconGrip } from '../components/Icons'
 
-// ── Custom collision: filter droppables by drag type ────
-function customCollision(args) {
-  const { active, droppableContainers } = args
-  const isSection = active.data.current?.type === 'section'
-  return closestCenter({
-    ...args,
-    droppableContainers: droppableContainers.filter(c => {
-      const id = c.id.toString()
-      return isSection ? id.startsWith('sec:') : !id.startsWith('sec:')
-    }),
-  })
-}
-
 // ── Sortable set item ────────────────────────────────────
 
 function SortableSetItem({ item, setId, isAdded, onRemove, onAdd }) {
-  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging, transform, transition } = useSortable({
-    id: item.id,
-    data: { type: 'item', category: item.category ?? null },
-  })
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, isDragging, transform, transition } = useSortable({ id: item.id })
   const key = `${setId}-${item.id}`
   return (
     <div
@@ -84,10 +68,7 @@ function SortableSetItem({ item, setId, isAdded, onRemove, onAdd }) {
         ref={setActivatorNodeRef}
         {...listeners}
         {...attributes}
-        style={{
-          padding: '4px 0 4px 8px', color: 'var(--border)',
-          cursor: 'grab', touchAction: 'none', flexShrink: 0,
-        }}
+        style={{ padding: '4px 0 4px 8px', color: 'var(--border)', cursor: 'grab', touchAction: 'none', flexShrink: 0 }}
       >
         <IconGrip />
       </div>
@@ -110,44 +91,33 @@ function SetItemOverlay({ item }) {
   )
 }
 
-// ── Sortable section container (sets) ────────────────────
+// ── Sortable section header (sets) ───────────────────────
 
-function SortableSetSectionContainer({ cat, items: sectionItems, activeId, onRename, children }) {
-  const { attributes, listeners, setNodeRef: sortableRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
-    id: `sec:${cat}`,
-    data: { type: 'section', cat },
-  })
-  const { setNodeRef: droppableRef, isOver } = useDroppable({ id: `cat:${cat}` })
-  const setRef = useCallback((el) => { sortableRef(el); droppableRef(el) }, [sortableRef, droppableRef])
-
+function SortableSetSectionHeader({ id, name, onRename }) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id })
   return (
     <div
-      ref={setRef}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition: transition ?? 'background 0.15s, outline-color 0.15s',
-        opacity: isDragging ? 0.4 : 1,
-        borderRadius: 'var(--radius-md)',
-        background: isOver ? 'var(--accent-lt)' : 'transparent',
-        outline: isOver ? '2px solid var(--accent)' : '2px solid transparent',
-        outlineOffset: 2, marginBottom: 2,
-      }}
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
     >
       <EditableSectionHeader
-        name={cat}
+        name={name}
         onRename={onRename}
         style={{ margin: '10px 0 4px' }}
         sectionDrag={{ ref: setActivatorNodeRef, listeners, attributes }}
       />
-      <SortableContext items={sectionItems.map(i => i.id)} strategy={verticalListSortingStrategy}>
-        {children}
-      </SortableContext>
-      {sectionItems.length === 0 && activeId && activeId.toString().startsWith('sec:') === false && (
-        <div style={{
-          height: 40, borderRadius: 'var(--radius-sm)',
-          border: '2px dashed var(--border)', margin: '4px 0',
-        }} />
-      )}
+    </div>
+  )
+}
+
+// "Other" header — sortable drop target but not draggable (no handle)
+function OtherSetSectionHeader() {
+  const { setNodeRef, transform, transition } = useSortable({ id: 'sec:' })
+  return (
+    <div ref={setNodeRef}
+      className="section-header"
+      style={{ margin: '10px 0 4px', transform: CSS.Transform.toString(transform), transition }}>
+      Other
     </div>
   )
 }
@@ -208,8 +178,22 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
     ...presentCats.filter(cat => !sectionOrder.includes(cat)).sort(),
   ]
   const allNamedSections = [...sortedCats, ...emptySections.filter(s => !sortedCats.includes(s))]
-  const hasNamedSections = allNamedSections.length > 0
-  const activeItem = activeId && !activeId.toString().startsWith('sec:') ? currentSet?.items.find(i => i.id === activeId) : null
+
+  // Flat list: section headers and items interleaved in display order.
+  // 'sec:' sentinel inserted before uncategorized items as a droppable target.
+  const flatList = currentSet ? [
+    ...allNamedSections.flatMap(cat => [
+      { id: `sec:${cat}`, type: 'section', name: cat },
+      ...(grouped[cat] || []),
+    ]),
+    ...(allNamedSections.length > 0
+      ? [{ id: 'sec:', type: 'section', name: null }, ...uncategorized]
+      : uncategorized),
+  ] : []
+
+  const activeItem = activeId && !activeId.toString().startsWith('sec:')
+    ? currentSet?.items.find(i => i.id === activeId)
+    : null
 
   // ── Handlers ──────────────────────────────────────────
 
@@ -266,48 +250,38 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
     setActiveId(null)
     if (!over || active.id === over.id || !currentSet) return
 
-    const isSection = active.data.current?.type === 'section'
+    const oldIdx = flatList.findIndex(e => e.id === active.id)
+    const newIdx = flatList.findIndex(e => e.id === over.id)
+    if (oldIdx === -1 || newIdx === -1 || oldIdx === newIdx) return
 
-    if (isSection) {
-      const activeCat = active.data.current.cat
-      const overCat = over.id.toString().replace(/^sec:/, '')
-      const oldIdx = allNamedSections.indexOf(activeCat)
-      const newIdx = allNamedSections.indexOf(overCat)
-      if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
-        setSectionOrder(arrayMove(allNamedSections, oldIdx, newIdx))
-      }
-      return
+    const movedEntry = flatList[oldIdx]
+
+    // The 'sec:' sentinel is not draggable
+    if (movedEntry.id === 'sec:') return
+
+    // Prevent items from landing before the first named section header
+    if (movedEntry.type !== 'section' && allNamedSections.length > 0) {
+      const firstSectionIdx = flatList.findIndex(e => e.type === 'section')
+      if (newIdx <= firstSectionIdx) return
     }
 
-    const item = currentSet.items.find(i => i.id === active.id)
-    if (!item) return
+    const newFlat = arrayMove(flatList, oldIdx, newIdx)
 
-    const overId = over.id.toString()
-    const overIsCatDrop = overId.startsWith('cat:')
-    let targetCat
-    if (overIsCatDrop) {
-      targetCat = overId.replace('cat:', '') || null
-    } else {
-      const overItem = currentSet.items.find(i => i.id === over.id)
-      targetCat = overItem ? (overItem.category ?? null) : null
+    // Update section display order
+    setSectionOrder(newFlat.filter(e => e.type === 'section').map(e => e.name))
+
+    // Only update the moved item's category — other items keep theirs unchanged
+    if (movedEntry.type !== 'section') {
+      let newCat = null
+      for (let i = newIdx - 1; i >= 0; i--) {
+        if (newFlat[i].type === 'section') { newCat = newFlat[i].name; break }
+      }
+      if (newCat !== (movedEntry.category ?? null)) {
+        updateSetItemCategory(listId, currentSet.id, movedEntry.id, newCat)
+      }
     }
 
-    const itemCat = item.category ?? null
-
-    if (itemCat === targetCat && !overIsCatDrop) {
-      const sectionItems = targetCat ? (grouped[targetCat] || []) : uncategorized
-      const oldIdx = sectionItems.findIndex(i => i.id === active.id)
-      const newIdx = sectionItems.findIndex(i => i.id === over.id)
-      if (oldIdx !== -1 && newIdx !== -1 && oldIdx !== newIdx) {
-        const newOrder = arrayMove(sectionItems, oldIdx, newIdx)
-        reorderSetItems(listId, currentSet.id, newOrder.map(i => i.id))
-      }
-    } else if (itemCat !== targetCat) {
-      if (targetCat && emptySections.includes(targetCat)) {
-        setEmptySections(prev => prev.filter(s => s !== targetCat))
-      }
-      updateSetItemCategory(listId, currentSet.id, item.id, targetCat)
-    }
+    reorderSetItems(listId, currentSet.id, newFlat.filter(e => e.type !== 'section').map(e => e.id))
   }
 
   // ── Render ────────────────────────────────────────────
@@ -315,175 +289,132 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
   return (
     <>
       <div className="overlay" onClick={onClose} />
-      <div className="drawer">
-        <div className="drawer-handle" />
-        <div style={{ padding: '0 20px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.3px' }}>
-            Saved items
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              width: 32, height: 32, borderRadius: '50%', background: 'var(--surface2)',
-              border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            }}
-          >
-            <IconClose />
-          </button>
-        </div>
-
-        {/* Set tabs */}
-        <div style={{ display: 'flex', gap: 8, padding: '12px 20px', overflowX: 'auto' }}>
-          {sets.map((s, i) => (
+      {/* DndContext is outside div.drawer (position:fixed) so coordinate math uses the viewport frame */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
+        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
+        autoScroll={{ layoutShiftCompensation: false }}
+      >
+        <div className="drawer">
+          <div className="drawer-handle" />
+          <div style={{ padding: '0 20px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.3px' }}>
+              Saved items
+            </h2>
             <button
-              key={s.id}
-              onClick={() => handleSetChange(i)}
+              onClick={onClose}
               style={{
-                padding: '8px 16px', borderRadius: 999, border: 'none',
-                background: activeIdx === i ? 'var(--accent)' : 'var(--surface2)',
-                color: activeIdx === i ? '#fff' : 'var(--text2)',
-                fontFamily: 'Figtree,sans-serif', fontSize: 13, fontWeight: 700,
-                cursor: 'pointer', flexShrink: 0,
-                transition: 'all 0.2s var(--spring)',
-                transform: activeIdx === i ? 'scale(1.05)' : 'scale(1)',
+                width: 32, height: 32, borderRadius: '50%', background: 'var(--surface2)',
+                border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
               }}
             >
-              {s.name}
+              <IconClose />
             </button>
-          ))}
-          <button
-            onClick={handleNewSet}
-            style={{
-              padding: '8px 16px', borderRadius: 999, background: 'none',
-              border: '1.5px dashed var(--border)', color: 'var(--text2)',
-              fontFamily: 'Figtree,sans-serif', fontSize: 13, fontWeight: 600,
-              cursor: 'pointer', flexShrink: 0,
-            }}
-          >
-            + Set
-          </button>
-        </div>
+          </div>
 
-        {/* Items area */}
-        <div style={{ padding: '0 20px', maxHeight: 320, overflowY: 'auto' }}>
-          {loadingsets && sets.length === 0 ? (
-            <p style={{ color: 'var(--text2)', fontSize: 15, padding: '20px 0' }}>Loading…</p>
-          ) : !currentSet ? (
-            <p style={{ color: 'var(--text2)', fontSize: 15, padding: '20px 0' }}>No sets yet. Create one above.</p>
-          ) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={customCollision}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              onDragCancel={handleDragCancel}
+          {/* Set tabs */}
+          <div style={{ display: 'flex', gap: 8, padding: '12px 20px', overflowX: 'auto' }}>
+            {sets.map((s, i) => (
+              <button
+                key={s.id}
+                onClick={() => handleSetChange(i)}
+                style={{
+                  padding: '8px 16px', borderRadius: 999, border: 'none',
+                  background: activeIdx === i ? 'var(--accent)' : 'var(--surface2)',
+                  color: activeIdx === i ? '#fff' : 'var(--text2)',
+                  fontFamily: 'Figtree,sans-serif', fontSize: 13, fontWeight: 700,
+                  cursor: 'pointer', flexShrink: 0,
+                  transition: 'all 0.2s var(--spring)',
+                  transform: activeIdx === i ? 'scale(1.05)' : 'scale(1)',
+                }}
+              >
+                {s.name}
+              </button>
+            ))}
+            <button
+              onClick={handleNewSet}
+              style={{
+                padding: '8px 16px', borderRadius: 999, background: 'none',
+                border: '1.5px dashed var(--border)', color: 'var(--text2)',
+                fontFamily: 'Figtree,sans-serif', fontSize: 13, fontWeight: 600,
+                cursor: 'pointer', flexShrink: 0,
+              }}
             >
-              <SortableContext items={allNamedSections.map(cat => `sec:${cat}`)} strategy={verticalListSortingStrategy}>
-                {allNamedSections.map(cat => (
-                  <SortableSetSectionContainer
-                    key={cat}
-                    cat={cat}
-                    items={grouped[cat] || []}
-                    activeId={activeId}
-                    onRename={(newName) => handleRenameSection(cat, newName)}
-                  >
-                    {(grouped[cat] || []).map(item => (
-                      <SortableSetItem
-                        key={item.id}
-                        item={item}
-                        setId={currentSet.id}
-                        isAdded={!!added[`${currentSet.id}-${item.id}`]}
-                        onRemove={(itemId) => removeItemFromSet(listId, currentSet.id, itemId)}
-                        onAdd={handleAdd}
-                      />
-                    ))}
-                  </SortableSetSectionContainer>
-                ))}
-              </SortableContext>
+              + Set
+            </button>
+          </div>
 
-              {/* Uncategorized */}
-              <UncategorizedSetSection hasNamedSections={hasNamedSections} activeId={activeId}>
-                <SortableContext items={uncategorized.map(i => i.id)} strategy={verticalListSortingStrategy}>
-                  {uncategorized.map(item => (
+          {/* Items area */}
+          <div style={{ padding: '0 20px', maxHeight: 320, overflowY: 'auto' }}>
+            {loadingsets && sets.length === 0 ? (
+              <p style={{ color: 'var(--text2)', fontSize: 15, padding: '20px 0' }}>Loading…</p>
+            ) : !currentSet ? (
+              <p style={{ color: 'var(--text2)', fontSize: 15, padding: '20px 0' }}>No sets yet. Create one above.</p>
+            ) : (
+              <SortableContext items={flatList.map(e => e.id)} strategy={verticalListSortingStrategy}>
+                {flatList.map(entry => {
+                  if (entry.id === 'sec:') return <OtherSetSectionHeader key="sec:" />
+                  if (entry.type === 'section') return (
+                    <SortableSetSectionHeader
+                      key={entry.id}
+                      id={entry.id}
+                      name={entry.name}
+                      onRename={newName => handleRenameSection(entry.name, newName)}
+                    />
+                  )
+                  return (
                     <SortableSetItem
-                      key={item.id}
-                      item={item}
+                      key={entry.id}
+                      item={entry}
                       setId={currentSet.id}
-                      isAdded={!!added[`${currentSet.id}-${item.id}`]}
-                      onRemove={(itemId) => removeItemFromSet(listId, currentSet.id, itemId)}
+                      isAdded={!!added[`${currentSet.id}-${entry.id}`]}
+                      onRemove={itemId => removeItemFromSet(listId, currentSet.id, itemId)}
                       onAdd={handleAdd}
                     />
-                  ))}
-                </SortableContext>
-              </UncategorizedSetSection>
+                  )
+                })}
+              </SortableContext>
+            )}
 
-              <DragOverlay dropAnimation={null}>
-                {activeItem && <SetItemOverlay item={activeItem} />}
-              </DragOverlay>
-            </DndContext>
-          )}
-
-          {currentSet && (
-            <div style={{ marginTop: 12, paddingBottom: 8 }}>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                <button
-                  onClick={handleAddSection}
-                  style={{
-                    background: 'transparent', color: 'var(--text2)',
-                    border: '1.5px dashed var(--border)', borderRadius: 999,
-                    padding: '6px 14px', fontFamily: 'Figtree,sans-serif',
-                    fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                  }}
-                >
-                  + Section
-                </button>
+            {currentSet && (
+              <div style={{ marginTop: 12, paddingBottom: 8 }}>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                  <button
+                    onClick={handleAddSection}
+                    style={{
+                      background: 'transparent', color: 'var(--text2)',
+                      border: '1.5px dashed var(--border)', borderRadius: 999,
+                      padding: '6px 14px', fontFamily: 'Figtree,sans-serif',
+                      fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                    }}
+                  >
+                    + Section
+                  </button>
+                </div>
+                <div className="add-row">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round">
+                    <line x1="8" y1="3" x2="8" y2="13" /><line x1="3" y1="8" x2="13" y2="8" />
+                  </svg>
+                  <input
+                    ref={newItemRef}
+                    value={newItemVal}
+                    onChange={e => setNewItemVal(e.target.value)}
+                    onKeyDown={handleAddItemToSet}
+                    placeholder="Add item to set…"
+                  />
+                </div>
               </div>
-              <div className="add-row">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round">
-                  <line x1="8" y1="3" x2="8" y2="13" /><line x1="3" y1="8" x2="13" y2="8" />
-                </svg>
-                <input
-                  ref={newItemRef}
-                  value={newItemVal}
-                  onChange={e => setNewItemVal(e.target.value)}
-                  onKeyDown={handleAddItemToSet}
-                  placeholder="Add item to set…"
-                />
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+        <DragOverlay dropAnimation={null}>
+          {activeItem && <SetItemOverlay item={activeItem} />}
+        </DragOverlay>
+      </DndContext>
     </>
-  )
-}
-
-function UncategorizedSetSection({ hasNamedSections, activeId, children }) {
-  const { setNodeRef, isOver } = useDroppable({ id: 'cat:' })
-  return (
-    <div
-      ref={setNodeRef}
-      style={{
-        borderRadius: 'var(--radius-md)',
-        background: isOver ? 'var(--accent-lt)' : 'transparent',
-        outline: isOver ? '2px solid var(--accent)' : '2px solid transparent',
-        outlineOffset: 2,
-        transition: 'background 0.15s, outline-color 0.15s',
-        marginBottom: 2,
-      }}
-    >
-      {hasNamedSections && <div className="section-header" style={{ margin: '10px 0 4px' }}>Other</div>}
-      {children}
-      {isOver && activeId && activeId.toString().startsWith('sec:') === false && (
-        <div style={{
-          height: 40, borderRadius: 'var(--radius-sm)',
-          border: '2px dashed var(--border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 13, color: 'var(--text2)', margin: '4px 0',
-        }}>
-          Drop to remove category
-        </div>
-      )}
-    </div>
   )
 }

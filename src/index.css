@@ -306,7 +306,7 @@ html, body {
   gap: 14px;
   padding: 12px 4px;
   border-bottom: 1px solid var(--border);
-  animation: itemIn 0.3s var(--spring) both;
+  animation: itemIn 0.3s var(--spring) backwards;
 }
 .item-row:last-child { border-bottom: none; }
 .item-row.removing {
