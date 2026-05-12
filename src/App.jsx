@@ -60,10 +60,16 @@ export default function App() {
     document.documentElement.setAttribute('data-dark', dark)
   }, [dark])
 
-  // Re-fetch data when returning to the app with an existing session
   useEffect(() => {
     if (household) fetchAll()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!household) return
+    const onVisible = () => { if (document.visibilityState === 'visible') fetchAll() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [household, fetchAll])
 
   if (!household) {
     return (

@@ -10,10 +10,12 @@ export const useStore = create(
       household: null, // { name }
       dark: false,
 
-      // ── In-memory (loaded from API) ───────────────────
+      // ── Cached data ───────────────────────────────────
       lists: [],
       sets: {},      // { [listId]: [...] }
       recipes: [],
+      lastFetched: null,
+      setsLastFetched: {},
       loading: false,
       error: null,
 
@@ -33,7 +35,7 @@ export const useStore = create(
       },
 
       logout() {
-        set({ token: null, household: null, lists: [], sets: {}, recipes: [] })
+        set({ token: null, household: null, lists: [], sets: {}, recipes: [], lastFetched: null, setsLastFetched: {} })
       },
 
       async changePassword(oldPassword, newPassword) {
@@ -44,23 +46,36 @@ export const useStore = create(
       },
 
       // ── Fetch all data ─────────────────────────────────
-      async fetchAll() {
-        set({ loading: true, error: null })
+      async fetchAll({ force = false } = {}) {
+        const { lastFetched, lists } = get()
+        const STALE_MS = 2 * 60 * 1000
+        if (!force && lastFetched && Date.now() - lastFetched < STALE_MS) return
+
+        if (!lists.length) set({ loading: true, error: null })
         try {
           const [lists, recipes] = await Promise.all([
             api('/lists'),
             api('/recipes'),
           ])
-          set({ lists, recipes, loading: false })
+          set({ lists, recipes, loading: false, lastFetched: Date.now() })
         } catch (e) {
           set({ loading: false, error: e.message })
         }
       },
 
-      async fetchSetsForList(listId) {
-        const sets = await api(`/lists/${listId}/sets`)
-        set(s => ({ sets: { ...s.sets, [listId]: sets } }))
-        return sets
+      async fetchSetsForList(listId, { force = false } = {}) {
+        const { setsLastFetched, sets } = get()
+        const STALE_MS = 2 * 60 * 1000
+        if (!force && setsLastFetched[listId] && Date.now() - setsLastFetched[listId] < STALE_MS) {
+          return sets[listId] ?? []
+        }
+
+        const fetched = await api(`/lists/${listId}/sets`)
+        set(s => ({
+          sets: { ...s.sets, [listId]: fetched },
+          setsLastFetched: { ...s.setsLastFetched, [listId]: Date.now() },
+        }))
+        return fetched
       },
 
       // ── Lists ─────────────────────────────────────────
@@ -281,7 +296,16 @@ export const useStore = create(
     }),
     {
       name: 'nippu-storage',
-      partialize: s => ({ token: s.token, household: s.household, dark: s.dark }),
+      partialize: s => ({
+        token: s.token,
+        household: s.household,
+        dark: s.dark,
+        lists: s.lists,
+        recipes: s.recipes,
+        sets: s.sets,
+        lastFetched: s.lastFetched,
+        setsLastFetched: s.setsLastFetched,
+      }),
       onRehydrateStorage: () => state => {
         if (state?.dark) document.documentElement.setAttribute('data-dark', 'true')
       },
