@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
-import { Logo } from '../components/Icons'
 
 export default function LoginScreen() {
   const [name, setName] = useState('')
@@ -37,13 +36,11 @@ export default function LoginScreen() {
         justifyContent: 'center', padding: '32px 28px 48px', overflowY: 'auto',
       }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-            <Logo size={70} />
-          </div>
-          <h1 style={{
-            fontFamily: "'Leckerli One', cursive", fontSize: 40, fontWeight: 400,
-            color: 'var(--text)', letterSpacing: '-1.5px', lineHeight: 1,
-          }}>Nippu</h1>
+          <img
+            src="/icon-192.png"
+            alt="Nippu"
+            style={{ width: 160, height: 160, objectFit: 'contain' }}
+          />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
