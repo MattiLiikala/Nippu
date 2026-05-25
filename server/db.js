@@ -3,29 +3,29 @@ import { fileURLToPath } from 'url'
 
 const USE_SQLITE = !process.env.DATABASE_URL && !process.env.NETLIFY_DATABASE_URL
 
-let db, closeDb, initDb
+let db, closeDb
 
-if (USE_SQLITE) {
-  const { default: Database } = await import('better-sqlite3')
-  const __dirname = dirname(fileURLToPath(import.meta.url))
-  const sqlite = new Database(join(__dirname, '..', 'nippu.db'))
-  sqlite.pragma('journal_mode = WAL')
-  sqlite.pragma('foreign_keys = ON')
+export async function initDb() {
+  if (USE_SQLITE) {
+    const { default: Database } = await import('better-sqlite3')
+    const __dirname = dirname(fileURLToPath(import.meta.url))
+    const sqlite = new Database(join(__dirname, '..', 'nippu.db'))
+    sqlite.pragma('journal_mode = WAL')
+    sqlite.pragma('foreign_keys = ON')
 
-  db = {
-    async get(sql, args = []) { return sqlite.prepare(sql).get(...args) ?? undefined },
-    async all(sql, args = []) { return sqlite.prepare(sql).all(...args) },
-    async run(sql, args = []) { sqlite.prepare(sql).run(...args) },
-    async batch(stmts) {
-      sqlite.transaction(() => {
-        for (const { sql: q, args: a = [] } of stmts) sqlite.prepare(q).run(...a)
-      })()
-    },
-  }
+    db = {
+      async get(sql, args = []) { return sqlite.prepare(sql).get(...args) ?? undefined },
+      async all(sql, args = []) { return sqlite.prepare(sql).all(...args) },
+      async run(sql, args = []) { sqlite.prepare(sql).run(...args) },
+      async batch(stmts) {
+        sqlite.transaction(() => {
+          for (const { sql: q, args: a = [] } of stmts) sqlite.prepare(q).run(...a)
+        })()
+      },
+    }
 
-  closeDb = () => sqlite.close()
+    closeDb = () => sqlite.close()
 
-  initDb = async () => {
     sqlite.exec(`
       CREATE TABLE IF NOT EXISTS households (
         id TEXT PRIMARY KEY,
@@ -90,8 +90,7 @@ if (USE_SQLITE) {
         ord INTEGER NOT NULL DEFAULT 0
       );
     `)
-    // Column migrations — SQLite doesn't support IF NOT EXISTS on ALTER TABLE,
-    // so we check PRAGMA table_info first.
+
     const hasColumn = (table, col) =>
       sqlite.prepare(`PRAGMA table_info(${table})`).all().some(r => r.name === col)
 
@@ -106,49 +105,47 @@ if (USE_SQLITE) {
     for (const [table, col, sql] of migrations) {
       if (!hasColumn(table, col)) sqlite.exec(sql)
     }
-  }
-} else {
-  const { Pool } = await import('@neondatabase/serverless')
-  const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL,
-    max: 1,
-  })
+  } else {
+    const { Pool } = await import('@neondatabase/serverless')
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL || process.env.NETLIFY_DATABASE_URL,
+      max: 1,
+    })
 
-  function positional(sql) {
-    let i = 0
-    return sql.replace(/\?/g, () => `$${++i}`)
-  }
+    function positional(sql) {
+      let i = 0
+      return sql.replace(/\?/g, () => `$${++i}`)
+    }
 
-  db = {
-    async get(sql, args = []) {
-      const { rows } = await pool.query(positional(sql), args)
-      return rows[0]
-    },
-    async all(sql, args = []) {
-      const { rows } = await pool.query(positional(sql), args)
-      return rows
-    },
-    async run(sql, args = []) {
-      await pool.query(positional(sql), args)
-    },
-    async batch(stmts) {
-      const client = await pool.connect()
-      try {
-        await client.query('BEGIN')
-        for (const { sql: q, args: a = [] } of stmts) await client.query(positional(q), a)
-        await client.query('COMMIT')
-      } catch (e) {
-        await client.query('ROLLBACK')
-        throw e
-      } finally {
-        client.release()
-      }
-    },
-  }
+    db = {
+      async get(sql, args = []) {
+        const { rows } = await pool.query(positional(sql), args)
+        return rows[0]
+      },
+      async all(sql, args = []) {
+        const { rows } = await pool.query(positional(sql), args)
+        return rows
+      },
+      async run(sql, args = []) {
+        await pool.query(positional(sql), args)
+      },
+      async batch(stmts) {
+        const client = await pool.connect()
+        try {
+          await client.query('BEGIN')
+          for (const { sql: q, args: a = [] } of stmts) await client.query(positional(q), a)
+          await client.query('COMMIT')
+        } catch (e) {
+          await client.query('ROLLBACK')
+          throw e
+        } finally {
+          client.release()
+        }
+      },
+    }
 
-  closeDb = () => pool.end()
+    closeDb = () => pool.end()
 
-  initDb = async () => {
     await pool.query('CREATE EXTENSION IF NOT EXISTS citext')
     const tables = [
       `CREATE TABLE IF NOT EXISTS households (
@@ -227,4 +224,4 @@ if (USE_SQLITE) {
   }
 }
 
-export { db, closeDb, initDb }
+export { db, closeDb }
