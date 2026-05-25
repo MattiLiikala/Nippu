@@ -17,7 +17,7 @@ function RequireAuth({ children }) {
 function AppRoutes() {
   const location = useLocation()
   return (
-    <div key={location.pathname} className="screen-enter" style={{ height: '100%' }}>
+    <div key={location.pathname} className="screen-enter" style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
       <Routes location={location}>
         <Route path="/lists" element={<RequireAuth><HomeScreen /></RequireAuth>} />
         <Route path="/lists/:id" element={<RequireAuth><ListScreen /></RequireAuth>} />
@@ -58,7 +58,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <AppRoutes />
       <BottomNav />
     </div>
