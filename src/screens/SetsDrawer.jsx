@@ -34,7 +34,7 @@ function SortableSetItem({ item, setId, isAdded, onRemove, onAdd }) {
         onClick={() => onRemove(item.id)}
         style={{
           width: 30, height: 30, borderRadius: '50%', border: 'none',
-          background: 'oklch(0.95 0.05 25)', color: 'oklch(0.65 0.15 25)',
+          background: 'var(--danger-lt)', color: 'var(--danger)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           cursor: 'pointer', flexShrink: 0,
         }}
@@ -126,6 +126,7 @@ function OtherSetSectionHeader() {
 
 export default function SetsDrawer({ listId, onClose, onAddItems }) {
   const setsMap = useStore(s => s.sets)
+  const lists = useStore(s => s.lists)
   const fetchSetsForList = useStore(s => s.fetchSetsForList)
   const addSet = useStore(s => s.addSet)
   const addItemToSet = useStore(s => s.addItemToSet)
@@ -133,6 +134,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
   const updateSetItemCategory = useStore(s => s.updateSetItemCategory)
   const renameSetCategory = useStore(s => s.renameSetCategory)
   const reorderSetItems = useStore(s => s.reorderSetItems)
+  const updateSetDescription = useStore(s => s.updateSetDescription)
 
   const sets = setsMap[listId] || []
   const [activeIdx, setActiveIdx] = useState(0)
@@ -142,6 +144,11 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
   const [activeId, setActiveId] = useState(null)
   const [emptySections, setEmptySections] = useState([])
   const [sectionOrder, setSectionOrder] = useState([])
+  const [descEditing, setDescEditing] = useState(false)
+  const [descDraft, setDescDraft] = useState('')
+  const [addingSection, setAddingSection] = useState(false)
+  const [sectionDraft, setSectionDraft] = useState('')
+  const [sectionPickerRect, setSectionPickerRect] = useState(null)
   const newItemRef = useRef()
 
   const sensors = useSensors(
@@ -202,6 +209,9 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
     setEmptySections([])
     setSectionOrder([])
     setActiveId(null)
+    setDescEditing(false)
+    setAddingSection(false)
+    setSectionDraft('')
   }
 
   const handleAdd = (key, item) => {
@@ -226,12 +236,21 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
     }
   }
 
-  const handleAddSection = () => {
-    const name = window.prompt('Section name:')
-    if (!name?.trim()) return
+  // All category names used anywhere (main list items + all sets), deduplicated
+  const listData = lists.find(l => l.id === listId)
+  const allUsedSections = new Set()
+  for (const item of listData?.items ?? []) { if (item.category) allUsedSections.add(item.category) }
+  for (const set of sets) { for (const item of set.items ?? []) { if (item.category) allUsedSections.add(item.category) } }
+  const filteredSuggestions = [...allUsedSections].filter(s =>
+    !allNamedSections.includes(s) && s.toLowerCase().includes(sectionDraft.toLowerCase())
+  )
+
+  const commitSection = (name) => {
     const trimmed = name.trim()
-    if (allNamedSections.includes(trimmed)) return
+    if (!trimmed || allNamedSections.includes(trimmed)) return
     setEmptySections(prev => [...prev, trimmed])
+    setAddingSection(false)
+    setSectionDraft('')
   }
 
   const handleRenameSection = (oldName, newName) => {
@@ -348,8 +367,53 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
             </button>
           </div>
 
+          {/* Description */}
+          {currentSet && (
+            <div style={{ padding: '0 20px 12px' }}>
+              {descEditing ? (
+                <input
+                  autoFocus
+                  value={descDraft}
+                  onChange={e => setDescDraft(e.target.value)}
+                  onBlur={() => {
+                    const trimmed = descDraft.trim()
+                    if (trimmed !== (currentSet.description || '')) {
+                      updateSetDescription(listId, currentSet.id, trimmed || null)
+                    }
+                    setDescEditing(false)
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') { e.preventDefault(); e.target.blur() }
+                    if (e.key === 'Escape') setDescEditing(false)
+                  }}
+                  style={{
+                    display: 'block', width: '100%', boxSizing: 'border-box',
+                    fontSize: 13, fontWeight: 400, color: 'var(--text2)',
+                    letterSpacing: '0.08em',
+                    padding: '6px 0 3px',
+                    background: 'transparent', border: 'none', outline: 'none',
+                    borderBottom: '1.5px solid var(--text2)',
+                    fontFamily: 'Figtree,sans-serif',
+                  }}
+                />
+              ) : (
+                <span
+                  onClick={() => { setDescDraft(currentSet.description || ''); setDescEditing(true) }}
+                  style={{
+                    display: 'block', fontSize: 13, fontWeight: 400,
+                    letterSpacing: '0.08em', paddingTop: 6,
+                    color: currentSet.description ? 'var(--text2)' : 'var(--border)',
+                    cursor: 'text',
+                  }}
+                >
+                  {currentSet.description || 'Add a description…'}
+                </span>
+              )}
+            </div>
+          )}
+
           {/* Items area */}
-          <div style={{ padding: '0 20px', maxHeight: 320, overflowY: 'auto' }}>
+          <div style={{ padding: '0 20px', maxHeight: 300, overflowY: 'auto' }}>
             {loadingsets && sets.length === 0 ? (
               <p style={{ color: 'var(--text2)', fontSize: 15, padding: '20px 0' }}>Loading…</p>
             ) : !currentSet ? (
@@ -382,18 +446,66 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
 
             {currentSet && (
               <div style={{ marginTop: 12, paddingBottom: 8 }}>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                  <button
-                    onClick={handleAddSection}
-                    style={{
-                      background: 'transparent', color: 'var(--text2)',
-                      border: '1.5px dashed var(--border)', borderRadius: 999,
-                      padding: '6px 14px', fontFamily: 'Figtree,sans-serif',
-                      fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                    }}
-                  >
-                    + Section
-                  </button>
+                <div style={{ marginBottom: 8 }}>
+                  {addingSection ? (
+                    <div>
+                      <input
+                        autoFocus
+                        value={sectionDraft}
+                        onChange={e => {
+                          setSectionDraft(e.target.value)
+                          setSectionPickerRect(e.target.getBoundingClientRect())
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && sectionDraft.trim()) commitSection(sectionDraft)
+                          if (e.key === 'Escape') { setAddingSection(false); setSectionDraft('') }
+                        }}
+                        onBlur={() => { if (!sectionDraft.trim()) setAddingSection(false) }}
+                        placeholder="Section name…"
+                        style={{
+                          display: 'block', width: '100%', boxSizing: 'border-box',
+                          fontSize: 13, fontWeight: 700, color: 'var(--text)',
+                          letterSpacing: '0.08em',
+                          padding: '6px 0 4px',
+                          background: 'transparent', border: 'none', outline: 'none',
+                          borderBottom: '1.5px solid var(--accent)',
+                          fontFamily: 'Figtree,sans-serif',
+                        }}
+                      />
+                      {sectionDraft && sectionPickerRect && filteredSuggestions.length > 0 && (
+                        <div style={{
+                          position: 'fixed',
+                          bottom: window.innerHeight - sectionPickerRect.top + 6,
+                          left: sectionPickerRect.left,
+                          width: sectionPickerRect.width,
+                          background: 'var(--surface)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius-md)',
+                          boxShadow: 'var(--shadow-lg)',
+                          overflow: 'hidden',
+                          zIndex: 50,
+                        }}>
+                          {filteredSuggestions.map(s => (
+                            <div key={s} className="section-ac-item" onMouseDown={e => e.preventDefault()} onClick={() => commitSection(s)}>
+                              {s}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setAddingSection(true)}
+                      style={{
+                        background: 'transparent', color: 'var(--text2)',
+                        border: '1.5px dashed var(--border)', borderRadius: 999,
+                        padding: '6px 14px', fontFamily: 'Figtree,sans-serif',
+                        fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                      }}
+                    >
+                      + Section
+                    </button>
+                  )}
                 </div>
                 <div className="add-row">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round">

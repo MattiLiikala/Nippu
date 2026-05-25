@@ -155,6 +155,16 @@ router.post('/:id/sets', async (req, res) => {
   res.json({ ...(await db.get('SELECT * FROM sets WHERE id = ?', [id])), items: [] })
 })
 
+router.patch('/:id/sets/:setId', async (req, res) => {
+  const list = await getList(req.params.id, req.household.householdId)
+  if (!list) return res.status(404).json({ error: 'Not found' })
+  const set = await db.get('SELECT * FROM sets WHERE id = ? AND list_id = ?', [req.params.setId, list.id])
+  if (!set) return res.status(404).json({ error: 'Set not found' })
+  const { description } = req.body
+  await db.run('UPDATE sets SET description = ? WHERE id = ?', [description ?? null, set.id])
+  res.json({ ok: true })
+})
+
 router.post('/:id/sets/:setId/items', async (req, res) => {
   const list = await getList(req.params.id, req.household.householdId)
   if (!list) return res.status(404).json({ error: 'Not found' })

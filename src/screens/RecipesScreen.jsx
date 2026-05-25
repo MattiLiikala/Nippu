@@ -44,6 +44,7 @@ export default function RecipesScreen() {
         recipe={selected}
         onBack={() => setView(selected ? 'detail' : 'list')}
         onSave={(updated) => { setSelected(updated); setView(selected ? 'detail' : 'list') }}
+        onRemove={() => { setSelected(null); setView('list') }}
       />
     )
   }

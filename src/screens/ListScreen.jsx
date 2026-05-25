@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import SetsDrawer from './SetsDrawer'
@@ -14,7 +14,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { EditableSectionHeader } from '../components/DragDrop'
-import { IconBack, IconCheck, IconMore, IconSets, IconGrip } from '../components/Icons'
+import { IconBack, IconCheck, IconMore, IconSets, IconGrip, IconTrash } from '../components/Icons'
 
 // ── Sortable item ────────────────────────────────────────
 
@@ -100,8 +100,13 @@ export default function ListScreen() {
   const addItemsFromSet = useStore(s => s.addItemsFromSet)
   const updateItemCategory = useStore(s => s.updateItemCategory)
   const renameCategory = useStore(s => s.renameCategory)
+  const renameList = useStore(s => s.renameList)
+  const removeList = useStore(s => s.removeList)
   const reorderListItems = useStore(s => s.reorderListItems)
   const updateListSectionOrder = useStore(s => s.updateListSectionOrder)
+
+  const setsForList = useStore(s => s.sets[id] ?? [])
+  const fetchSetsForList = useStore(s => s.fetchSetsForList)
 
   const list = lists.find(l => l.id === id)
   const [removing, setRemoving] = useState(null)
@@ -110,12 +115,22 @@ export default function ListScreen() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [activeId, setActiveId] = useState(null)
   const [emptySections, setEmptySections] = useState([])
+  const [titleEditing, setTitleEditing] = useState(false)
+  const [titleDraft, setTitleDraft] = useState('')
+  const [addingSection, setAddingSection] = useState(false)
+  const [sectionDraft, setSectionDraft] = useState('')
+  const [sectionPickerRect, setSectionPickerRect] = useState(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [confirmRemove, setConfirmRemove] = useState(false)
   const inputRef = useRef()
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   )
+
+  // Prefetch sets so their categories appear in section suggestions
+  useEffect(() => { if (id) fetchSetsForList(id) }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!list) return (
     <div className="screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -189,12 +204,20 @@ export default function ListScreen() {
     }
   }
 
-  const handleAddSection = () => {
-    const name = window.prompt('Section name:')
-    if (!name?.trim()) return
+  // All category names used anywhere (list items + all sets), deduplicated
+  const allUsedSections = new Set()
+  for (const item of list.items) { if (item.category) allUsedSections.add(item.category) }
+  for (const set of setsForList) { for (const item of set.items ?? []) { if (item.category) allUsedSections.add(item.category) } }
+  const filteredSuggestions = [...allUsedSections].filter(s =>
+    !allNamedSections.includes(s) && s.toLowerCase().includes(sectionDraft.toLowerCase())
+  )
+
+  const commitSection = (name) => {
     const trimmed = name.trim()
-    if (allNamedSections.includes(trimmed)) return
+    if (!trimmed || allNamedSections.includes(trimmed)) return
     setEmptySections(prev => [...prev, trimmed])
+    setAddingSection(false)
+    setSectionDraft('')
   }
 
   const handleRenameSection = (oldName, newName) => {
@@ -261,12 +284,109 @@ export default function ListScreen() {
           <IconBack />
         </button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.3px', marginTop: 1 }}>
-            {list.name}
-          </h1>
+          {titleEditing ? (
+            <input
+              autoFocus
+              value={titleDraft}
+              onChange={e => setTitleDraft(e.target.value)}
+              onBlur={() => {
+                const trimmed = titleDraft.trim()
+                if (trimmed && trimmed !== list.name) renameList(list.id, trimmed)
+                setTitleEditing(false)
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter') { e.preventDefault(); e.target.blur() }
+                if (e.key === 'Escape') setTitleEditing(false)
+              }}
+              style={{
+                fontSize: 20, fontWeight: 800, color: 'var(--text)',
+                letterSpacing: '-0.3px', marginTop: 1,
+                background: 'transparent', border: 'none', outline: 'none',
+                borderBottom: '1.5px solid var(--accent)',
+                padding: '0 0 2px', width: '100%',
+                fontFamily: 'Figtree,sans-serif',
+              }}
+            />
+          ) : (
+            <h1
+              onClick={() => { setTitleDraft(list.name); setTitleEditing(true) }}
+              style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.3px', marginTop: 1, cursor: 'text' }}
+            >
+              {list.name}
+            </h1>
+          )}
         </div>
-        <div style={{ cursor: 'pointer', padding: 4 }}><IconMore /></div>
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setMenuOpen(o => !o)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', borderRadius: 8 }}
+          >
+            <IconMore />
+          </button>
+          {menuOpen && (
+            <>
+              <div style={{ position: 'fixed', inset: 0, zIndex: 19 }} onClick={() => setMenuOpen(false)} />
+              <div style={{
+                position: 'absolute', top: '100%', right: 0, marginTop: 4,
+                background: 'var(--surface)', borderRadius: 'var(--radius-md)',
+                boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border)',
+                zIndex: 20, minWidth: 160, overflow: 'hidden',
+              }}>
+                <button
+                  onClick={() => { setMenuOpen(false); setConfirmRemove(true) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    width: '100%', padding: '12px 16px', background: 'none', border: 'none',
+                    color: 'var(--danger)', fontFamily: 'Figtree,sans-serif',
+                    fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'left',
+                  }}
+                >
+                  <IconTrash />
+                  Remove list
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
+
+      {confirmRemove && (
+        <>
+          <div className="overlay" onClick={() => setConfirmRemove(false)} style={{ zIndex: 40 }} />
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 41,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '0 24px',
+          }}>
+            <div style={{
+              background: 'var(--surface)', borderRadius: 'var(--radius-xl)',
+              padding: '28px 24px', width: '100%', maxWidth: 360,
+              boxShadow: 'var(--shadow-lg)',
+              animation: 'toastIn 0.2s var(--spring) both',
+            }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Remove list?</h2>
+              <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.5 }}>
+                "{list.name}" and all its items will be permanently deleted.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <button
+                  onClick={async () => { await removeList(list.id); navigate('/lists') }}
+                  style={{
+                    padding: '13px', background: 'var(--danger)', color: '#fff', border: 'none',
+                    borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 15,
+                    fontWeight: 700, cursor: 'pointer',
+                  }}
+                >
+                  Yes, remove
+                </button>
+                <button className="btn-ghost" onClick={() => setConfirmRemove(false)}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       <DndContext
         sensors={sensors}
@@ -312,19 +432,67 @@ export default function ListScreen() {
             />
           </div>
 
-          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-            <button
-              onClick={handleAddSection}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'transparent', color: 'var(--text2)',
-                border: '1.5px dashed var(--border)', borderRadius: 999, padding: '10px 16px',
-                fontFamily: 'Figtree,sans-serif', fontSize: 14, fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              + Section
-            </button>
+          <div style={{ marginTop: 10 }}>
+            {addingSection ? (
+              <div>
+                <input
+                  autoFocus
+                  value={sectionDraft}
+                  onChange={e => {
+                    setSectionDraft(e.target.value)
+                    setSectionPickerRect(e.target.getBoundingClientRect())
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && sectionDraft.trim()) commitSection(sectionDraft)
+                    if (e.key === 'Escape') { setAddingSection(false); setSectionDraft('') }
+                  }}
+                  onBlur={() => { if (!sectionDraft.trim()) setAddingSection(false) }}
+                  placeholder="Section name…"
+                  style={{
+                    display: 'block', width: '100%', boxSizing: 'border-box',
+                    fontSize: 13, fontWeight: 700, color: 'var(--text)',
+                    letterSpacing: '0.08em',
+                    padding: '6px 0 4px',
+                    background: 'transparent', border: 'none', outline: 'none',
+                    borderBottom: '1.5px solid var(--accent)',
+                    fontFamily: 'Figtree,sans-serif',
+                  }}
+                />
+                {sectionDraft && sectionPickerRect && filteredSuggestions.length > 0 && (
+                  <div style={{
+                    position: 'fixed',
+                    bottom: window.innerHeight - sectionPickerRect.top + 6,
+                    left: sectionPickerRect.left,
+                    width: sectionPickerRect.width,
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-md)',
+                    boxShadow: 'var(--shadow-lg)',
+                    overflow: 'hidden',
+                    zIndex: 50,
+                  }}>
+                    {filteredSuggestions.map(s => (
+                      <div key={s} className="section-ac-item" onMouseDown={e => e.preventDefault()} onClick={() => commitSection(s)}>
+                        {s}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button
+                onClick={() => setAddingSection(true)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: 'transparent', color: 'var(--text2)',
+                  border: '1.5px dashed var(--border)', borderRadius: 999, padding: '10px 16px',
+                  fontFamily: 'Figtree,sans-serif', fontSize: 14, fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                + Section
+              </button>
+            )}
           </div>
 
           {lastRemoved && (
@@ -352,7 +520,6 @@ export default function ListScreen() {
           padding: '12px 24px',
           fontFamily: 'Figtree,sans-serif', fontSize: 15, fontWeight: 700,
           cursor: 'pointer', zIndex: 15,
-          boxShadow: '0 4px 16px rgba(85,134,140,0.35)',
           whiteSpace: 'nowrap',
         }}
       >

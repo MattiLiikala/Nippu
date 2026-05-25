@@ -7,28 +7,6 @@ import ListScreen from './screens/ListScreen'
 import RecipesScreen from './screens/RecipesScreen'
 import HouseholdScreen from './screens/HouseholdScreen'
 import BottomNav from './components/BottomNav'
-import { IconSun, IconMoon } from './components/Icons'
-
-function DarkToggle() {
-  const dark = useStore(s => s.dark)
-  const toggleDark = useStore(s => s.toggleDark)
-  return (
-    <button
-      onClick={toggleDark}
-      aria-label="Toggle dark mode"
-      style={{
-        position: 'fixed', top: 16, right: 'max(16px, calc(50vw - 284px))',
-        width: 42, height: 42, borderRadius: '50%',
-        background: 'var(--surface)', boxShadow: 'var(--shadow)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', zIndex: 100, border: 'none',
-        transition: 'transform 0.2s var(--spring)',
-      }}
-    >
-      {dark ? <IconSun /> : <IconMoon />}
-    </button>
-  )
-}
 
 function RequireAuth({ children }) {
   const household = useStore(s => s.household)
@@ -74,7 +52,6 @@ export default function App() {
   if (!household) {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <DarkToggle />
         <LoginScreen />
       </div>
     )
@@ -82,7 +59,6 @@ export default function App() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <DarkToggle />
       <AppRoutes />
       <BottomNav />
     </div>

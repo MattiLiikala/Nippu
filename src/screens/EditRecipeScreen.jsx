@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useStore } from '../store/useStore'
 import { IconBack, IconTrash } from '../components/Icons'
 
-export default function EditRecipeScreen({ recipe, onBack, onSave }) {
+export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
   const addRecipe = useStore(s => s.addRecipe)
   const updateRecipe = useStore(s => s.updateRecipe)
+  const removeRecipe = useStore(s => s.removeRecipe)
 
   const [name, setName] = useState(recipe?.name || '')
   const [time, setTime] = useState(recipe?.time || '')
@@ -14,6 +15,7 @@ export default function EditRecipeScreen({ recipe, onBack, onSave }) {
   const [tab, setTab] = useState('ingredients')
   const [newIng, setNewIng] = useState('')
   const [saving, setSaving] = useState(false)
+  const [confirmRemove, setConfirmRemove] = useState(false)
 
   const addIng = (e) => {
     if (e.key === 'Enter' && newIng.trim()) {
@@ -122,7 +124,7 @@ export default function EditRecipeScreen({ recipe, onBack, onSave }) {
         </div>
       </div>
 
-      <div className="scroll-area" style={{ paddingTop: 8, paddingBottom: 80 }}>
+      <div className="scroll-area" style={{ paddingTop: 8, paddingBottom: 100 }}>
         {tab === 'ingredients' ? (
           <>
             {ingredients.map((ing, i) => (
@@ -164,7 +166,63 @@ export default function EditRecipeScreen({ recipe, onBack, onSave }) {
             }}
           />
         )}
+
+        {recipe && (
+          <div style={{ marginTop: 32, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+            <button
+              onClick={() => setConfirmRemove(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: 'none', border: '1.5px solid var(--danger)',
+                borderRadius: 999, padding: '10px 20px',
+                color: 'var(--danger)', fontFamily: 'Figtree,sans-serif',
+                fontSize: 14, fontWeight: 700, cursor: 'pointer',
+              }}
+            >
+              <IconTrash />
+              Remove recipe
+            </button>
+          </div>
+        )}
       </div>
+
+      {confirmRemove && (
+        <>
+          <div className="overlay" onClick={() => setConfirmRemove(false)} style={{ zIndex: 40 }} />
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 41,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '0 24px',
+          }}>
+            <div style={{
+              background: 'var(--surface)', borderRadius: 'var(--radius-xl)',
+              padding: '28px 24px', width: '100%', maxWidth: 360,
+              boxShadow: 'var(--shadow-lg)',
+              animation: 'toastIn 0.2s var(--spring) both',
+            }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Remove recipe?</h2>
+              <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.5 }}>
+                "{recipe.name}" will be permanently deleted.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <button
+                  onClick={async () => { await removeRecipe(recipe.id); onRemove?.() }}
+                  style={{
+                    padding: '13px', background: 'var(--danger)', color: '#fff', border: 'none',
+                    borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 15,
+                    fontWeight: 700, cursor: 'pointer',
+                  }}
+                >
+                  Yes, remove
+                </button>
+                <button className="btn-ghost" onClick={() => setConfirmRemove(false)}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

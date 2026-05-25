@@ -8,19 +8,11 @@ export default function HomeScreen() {
   const lists = useStore(s => s.lists)
   const loading = useStore(s => s.loading)
   const household = useStore(s => s.household)
-  const renameHousehold = useStore(s => s.renameHousehold)
   const addList = useStore(s => s.addList)
 
-  const [editing, setEditing] = useState(false)
-  const [nameVal, setNameVal] = useState(household?.name || 'My Household')
   const [newListOpen, setNewListOpen] = useState(false)
   const [newListName, setNewListName] = useState('')
   const [creating, setCreating] = useState(false)
-
-  const commitName = () => {
-    setEditing(false)
-    if (nameVal.trim()) renameHousehold(nameVal.trim())
-  }
 
   const handleNewList = async () => {
     if (!newListName.trim() || creating) return
@@ -38,33 +30,9 @@ export default function HomeScreen() {
   return (
     <div className="screen" style={{ position: 'relative' }}>
       <div style={{ padding: '24px 24px 8px', flexShrink: 0 }}>
-        {editing ? (
-          <input
-            autoFocus
-            value={nameVal}
-            onChange={e => setNameVal(e.target.value)}
-            onBlur={commitName}
-            onKeyDown={e => e.key === 'Enter' && commitName()}
-            style={{
-              fontSize: 26, fontWeight: 900, color: 'var(--text)',
-              letterSpacing: '-0.5px', border: 'none',
-              borderBottom: '2px solid var(--accent)', outline: 'none',
-              background: 'transparent', fontFamily: 'Figtree,sans-serif',
-              width: '100%', padding: '2px 0',
-            }}
-          />
-        ) : (
-          <h1
-            onClick={() => setEditing(true)}
-            style={{
-              fontSize: 26, fontWeight: 900, color: 'var(--text)',
-              letterSpacing: '-0.5px', cursor: 'text',
-              borderBottom: '2px solid transparent', padding: '2px 0',
-            }}
-          >
-            {nameVal}
-          </h1>
-        )}
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.5px' }}>
+          {household?.name}
+        </h1>
       </div>
 
       <div className="scroll-area" style={{ paddingTop: 8, paddingBottom: 100 }}>

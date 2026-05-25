@@ -20,6 +20,8 @@
   --radius-lg: 20px;
   --radius-md: 14px;
   --radius-sm: 10px;
+  --danger:    #C0392B;
+  --danger-lt: #FBEAE8;
   --shadow:    0 2px 12px rgba(28,26,22,0.08), 0 1px 3px rgba(28,26,22,0.06);
   --shadow-lg: 0 8px 32px rgba(28,26,22,0.12), 0 2px 8px rgba(28,26,22,0.08);
   --spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -32,10 +34,12 @@
   --surface2:  #2A2720;
   --border:    #3A3730;
   --text:      #F0EDE6;
-  --text2:     #8A8378;
-  --accent:    #6A9FA5;
+  --text2:     #a6a097;
+  --accent:    #245b61;
   --accent-lt: #2A2720;
   --accent-dk: #A8CDD0;
+  --danger:    #E05C4B;
+  --danger-lt: #2E1A18;
   --shadow:    0 2px 12px rgba(0,0,0,0.30), 0 1px 3px rgba(0,0,0,0.20);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.40), 0 2px 8px rgba(0,0,0,0.30);
 }
@@ -144,7 +148,6 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 16px rgba(85,134,140,0.40);
   cursor: pointer;
   z-index: 15;
   border: none;
@@ -179,7 +182,6 @@ html, body {
   border-radius: 999px;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: var(--shadow);
   white-space: nowrap;
 }
 .fab-mini {
@@ -191,7 +193,6 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--shadow);
   font-size: 20px;
   font-weight: 700;
   flex-shrink: 0;
@@ -238,8 +239,7 @@ html, body {
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.15s var(--spring), box-shadow 0.15s var(--ease);
-  box-shadow: 0 4px 16px rgba(85,134,140,0.34);
+  transition: transform 0.15s var(--spring);
   -webkit-user-select: none;
   user-select: none;
 }
@@ -350,8 +350,12 @@ html, body {
 .drawer {
   position: fixed;
   bottom: 0;
-  left: max(0px, 50vw - 300px);
-  right: max(0px, 50vw - 300px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
   background: var(--surface);
   border-radius: 28px 28px 0 0;
   z-index: 31;
@@ -366,6 +370,18 @@ html, body {
   background: var(--border);
   margin: 12px auto 16px;
 }
+
+/* ── Section autocomplete ───────────────────────────── */
+.section-ac-item {
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 0.12s;
+}
+.section-ac-item:hover { background: var(--surface2); }
 
 /* ── Undo toast ────────────────────────────────────── */
 .undo-toast {
@@ -411,7 +427,6 @@ html, body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: var(--shadow);
   flex-shrink: 0;
   border: none;
 }

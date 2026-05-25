@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import { db } from '../db.js'
-import { sign } from '../auth.js'
+import { sign, requireAuth } from '../auth.js'
 import uid from '../uid.js'
 
 const router = Router()
@@ -31,6 +31,19 @@ router.post('/join', async (req, res) => {
   if (!ok) return res.status(401).json({ error: 'Wrong password' })
 
   res.json({ token: sign({ householdId: row.id, householdName: row.name }), name: row.name })
+})
+
+router.patch('/rename', requireAuth, async (req, res) => {
+  const { name } = req.body
+  if (!name?.trim()) return res.status(400).json({ error: 'Name required' })
+  const newName = name.trim()
+  const existing = await db.get('SELECT id FROM households WHERE name = ?', [newName])
+  if (existing && existing.id !== req.household.householdId) {
+    return res.status(409).json({ error: 'Household name already taken' })
+  }
+  await db.run('UPDATE households SET name = ? WHERE id = ?', [newName, req.household.householdId])
+  const token = sign({ householdId: req.household.householdId, householdName: newName })
+  res.json({ token, name: newName })
 })
 
 router.post('/change-password', async (req, res) => {

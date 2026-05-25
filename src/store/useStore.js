@@ -8,7 +8,7 @@ export const useStore = create(
       // ── Persisted ──────────────────────────────────────
       token: null,
       household: null, // { name }
-      dark: false,
+      dark: window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false,
 
       // ── Cached data ───────────────────────────────────
       lists: [],
@@ -192,6 +192,22 @@ export const useStore = create(
         }
       },
 
+      async updateSetDescription(listId, setId, description) {
+        set(s => ({
+          sets: {
+            ...s.sets,
+            [listId]: (s.sets[listId] || []).map(st =>
+              st.id === setId ? { ...st, description } : st
+            ),
+          },
+        }))
+        try {
+          await api(`/lists/${listId}/sets/${setId}`, { method: 'PATCH', body: { description } })
+        } catch {
+          await get().fetchSetsForList(listId, { force: true })
+        }
+      },
+
       async reorderSetItems(listId, setId, idsInOrder) {
         set(s => ({
           sets: {
@@ -282,9 +298,10 @@ export const useStore = create(
         set(s => ({ recipes: s.recipes.filter(r => r.id !== id) }))
       },
 
-      // ── Household name (local only — name is in JWT) ──
-      renameHousehold(name) {
-        set(s => ({ household: { ...s.household, name } }))
+      // ── Household name ────────────────────────────────
+      async renameHousehold(name) {
+        const data = await api('/auth/rename', { method: 'PATCH', body: { name } })
+        set({ token: data.token, household: { name: data.name } })
       },
 
       // ── Dark mode ─────────────────────────────────────
@@ -307,7 +324,8 @@ export const useStore = create(
         setsLastFetched: s.setsLastFetched,
       }),
       onRehydrateStorage: () => state => {
-        if (state?.dark) document.documentElement.setAttribute('data-dark', 'true')
+        const isDark = state?.dark ?? window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
+        document.documentElement.setAttribute('data-dark', isDark)
       },
     }
   )
