@@ -12,7 +12,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { EditableSectionHeader } from '../components/DragDrop'
-import { IconCheck, IconClose, IconTrash, IconGrip } from '../components/Icons'
+import { IconCheck, IconClose, IconTrash, IconGrip, IconMore } from '../components/Icons'
 
 // ── Sortable set item ────────────────────────────────────
 
@@ -135,6 +135,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
   const renameSetCategory = useStore(s => s.renameSetCategory)
   const reorderSetItems = useStore(s => s.reorderSetItems)
   const updateSetDescription = useStore(s => s.updateSetDescription)
+  const removeSet = useStore(s => s.removeSet)
 
   const sets = setsMap[listId] || []
   const [activeIdx, setActiveIdx] = useState(0)
@@ -149,6 +150,8 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
   const [addingSection, setAddingSection] = useState(false)
   const [sectionDraft, setSectionDraft] = useState('')
   const [sectionPickerRect, setSectionPickerRect] = useState(null)
+  const [setMenuOpen, setSetMenuOpen] = useState(false)
+  const [confirmRemoveSet, setConfirmRemoveSet] = useState(false)
   const newItemRef = useRef()
 
   const sensors = useSensors(
@@ -212,6 +215,8 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
     setDescEditing(false)
     setAddingSection(false)
     setSectionDraft('')
+    setSetMenuOpen(false)
+    setConfirmRemoveSet(false)
   }
 
   const handleAdd = (key, item) => {
@@ -367,49 +372,125 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
             </button>
           </div>
 
-          {/* Description */}
+          {/* Description + three-dots menu */}
           {currentSet && (
-            <div style={{ padding: '0 20px 12px' }}>
-              {descEditing ? (
-                <input
-                  autoFocus
-                  value={descDraft}
-                  onChange={e => setDescDraft(e.target.value)}
-                  onBlur={() => {
-                    const trimmed = descDraft.trim()
-                    if (trimmed !== (currentSet.description || '')) {
-                      updateSetDescription(listId, currentSet.id, trimmed || null)
-                    }
-                    setDescEditing(false)
-                  }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') { e.preventDefault(); e.target.blur() }
-                    if (e.key === 'Escape') setDescEditing(false)
-                  }}
-                  style={{
-                    display: 'block', width: '100%', boxSizing: 'border-box',
-                    fontSize: 13, fontWeight: 400, color: 'var(--text2)',
-                    letterSpacing: '0.08em',
-                    padding: '6px 0 3px',
-                    background: 'transparent', border: 'none', outline: 'none',
-                    borderBottom: '1.5px solid var(--text2)',
-                    fontFamily: 'Figtree,sans-serif',
-                  }}
-                />
-              ) : (
-                <span
-                  onClick={() => { setDescDraft(currentSet.description || ''); setDescEditing(true) }}
-                  style={{
-                    display: 'block', fontSize: 13, fontWeight: 400,
-                    letterSpacing: '0.08em', paddingTop: 6,
-                    color: currentSet.description ? 'var(--text2)' : 'var(--border)',
-                    cursor: 'text',
-                  }}
+            <div style={{ padding: '0 20px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                {descEditing ? (
+                  <input
+                    autoFocus
+                    value={descDraft}
+                    onChange={e => setDescDraft(e.target.value)}
+                    onBlur={() => {
+                      const trimmed = descDraft.trim()
+                      if (trimmed !== (currentSet.description || '')) {
+                        updateSetDescription(listId, currentSet.id, trimmed || null)
+                      }
+                      setDescEditing(false)
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') { e.preventDefault(); e.target.blur() }
+                      if (e.key === 'Escape') setDescEditing(false)
+                    }}
+                    style={{
+                      display: 'block', width: '100%', boxSizing: 'border-box',
+                      fontSize: 13, fontWeight: 400, color: 'var(--text2)',
+                      letterSpacing: '0.08em',
+                      padding: '6px 0 3px',
+                      background: 'transparent', border: 'none', outline: 'none',
+                      borderBottom: '1.5px solid var(--text2)',
+                      fontFamily: 'Figtree,sans-serif',
+                    }}
+                  />
+                ) : (
+                  <span
+                    onClick={() => { setDescDraft(currentSet.description || ''); setDescEditing(true) }}
+                    style={{
+                      display: 'block', fontSize: 13, fontWeight: 400,
+                      letterSpacing: '0.08em', paddingTop: 6,
+                      color: currentSet.description ? 'var(--text2)' : 'var(--border)',
+                      cursor: 'text',
+                    }}
+                  >
+                    {currentSet.description || 'Add a description…'}
+                  </span>
+                )}
+              </div>
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <button
+                  onClick={() => setSetMenuOpen(o => !o)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', borderRadius: 8 }}
                 >
-                  {currentSet.description || 'Add a description…'}
-                </span>
-              )}
+                  <IconMore />
+                </button>
+                {setMenuOpen && (
+                  <>
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 19 }} onClick={() => setSetMenuOpen(false)} />
+                    <div style={{
+                      position: 'absolute', top: '100%', right: 0, marginTop: 4,
+                      background: 'var(--surface)', borderRadius: 'var(--radius-md)',
+                      boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border)',
+                      zIndex: 20, minWidth: 160, overflow: 'hidden',
+                    }}>
+                      <button
+                        onClick={() => { setSetMenuOpen(false); setConfirmRemoveSet(true) }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          width: '100%', padding: '12px 16px', background: 'none', border: 'none',
+                          color: 'var(--danger)', fontFamily: 'Figtree,sans-serif',
+                          fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'left',
+                        }}
+                      >
+                        <IconTrash />
+                        Remove set
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
+          )}
+
+          {confirmRemoveSet && currentSet && (
+            <>
+              <div className="overlay" onClick={() => setConfirmRemoveSet(false)} style={{ zIndex: 40 }} />
+              <div style={{
+                position: 'fixed', inset: 0, zIndex: 41,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '0 24px',
+              }}>
+                <div style={{
+                  background: 'var(--surface)', borderRadius: 'var(--radius-xl)',
+                  padding: '28px 24px', width: '100%', maxWidth: 360,
+                  boxShadow: 'var(--shadow-lg)',
+                  animation: 'toastIn 0.2s var(--spring) both',
+                }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Remove set?</h2>
+                  <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.5 }}>
+                    "{currentSet.name}" and all its items will be permanently deleted.
+                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <button
+                      onClick={async () => {
+                        await removeSet(listId, currentSet.id)
+                        setConfirmRemoveSet(false)
+                        setActiveIdx(0)
+                      }}
+                      style={{
+                        padding: '13px', background: 'var(--danger)', color: '#fff', border: 'none',
+                        borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 15,
+                        fontWeight: 700, cursor: 'pointer',
+                      }}
+                    >
+                      Yes, remove
+                    </button>
+                    <button className="btn-ghost" onClick={() => setConfirmRemoveSet(false)}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
           {/* Items area */}

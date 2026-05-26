@@ -237,6 +237,13 @@ export const useStore = create(
         return set_.id
       },
 
+      async removeSet(listId, setId) {
+        await api(`/lists/${listId}/sets/${setId}`, { method: 'DELETE' })
+        set(s => ({
+          sets: { ...s.sets, [listId]: (s.sets[listId] || []).filter(st => st.id !== setId) },
+        }))
+      },
+
       async addItemToSet(listId, setId, name, category = null) {
         const item = await api(`/lists/${listId}/sets/${setId}/items`, { method: 'POST', body: { name, category } })
         set(s => ({

@@ -217,6 +217,16 @@ router.patch('/:id/sets/:setId/categories', async (req, res) => {
   res.json({ ok: true })
 })
 
+router.delete('/:id/sets/:setId', async (req, res) => {
+  const list = await getList(req.params.id, req.household.householdId)
+  if (!list) return res.status(404).json({ error: 'Not found' })
+  const set = await db.get('SELECT * FROM sets WHERE id = ? AND list_id = ?', [req.params.setId, list.id])
+  if (!set) return res.status(404).json({ error: 'Set not found' })
+  await db.run('DELETE FROM set_items WHERE set_id = ?', [set.id])
+  await db.run('DELETE FROM sets WHERE id = ?', [set.id])
+  res.json({ ok: true })
+})
+
 router.delete('/:id/sets/:setId/items/:itemId', async (req, res) => {
   const list = await getList(req.params.id, req.household.householdId)
   if (!list) return res.status(404).json({ error: 'Not found' })
