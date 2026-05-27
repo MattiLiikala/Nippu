@@ -52,7 +52,7 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
   return (
     <div className="screen">
       <div style={{ background: 'var(--bg)', flexShrink: 0 }}>
-        <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+        <div style={{ padding: '16px 24px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <button className="back-btn" onClick={onBack}>
             <IconBack />
           </button>
@@ -63,19 +63,19 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
             className="btn-primary"
             onClick={handleSave}
             disabled={saving}
-            style={{ width: 'auto', padding: '8px 20px', fontSize: 14, opacity: saving ? 0.7 : 1 }}
+            style={{ width: 'auto', padding: '8px 16px', fontSize: 16, opacity: saving ? 0.7 : 1 }}
           >
             {saving ? 'Saving…' : 'Save'}
           </button>
         </div>
 
-        <div style={{ padding: '0 20px' }}>
+        <div style={{ padding: '0 24px' }}>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             placeholder="Recipe name"
             style={{
-              width: '100%', fontFamily: 'Figtree,sans-serif', fontSize: 20, fontWeight: 800,
+              width: '100%', fontFamily: 'Figtree,sans-serif', fontSize: 20, fontWeight: 700,
               border: 'none', borderBottom: '2px solid var(--border)', padding: '6px 0',
               outline: 'none', background: 'transparent', color: 'var(--text)', marginBottom: 10,
             }}
@@ -86,7 +86,7 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
               onChange={e => setTime(e.target.value)}
               placeholder="Time (e.g. 30 min)"
               style={{
-                flex: 1, fontFamily: 'Figtree,sans-serif', fontSize: 14, color: 'var(--text)',
+                flex: 1, fontFamily: 'Figtree,sans-serif', fontSize: 16, color: 'var(--text)',
                 border: 'none', borderBottom: '1px solid var(--border)', padding: '5px 0',
                 outline: 'none', background: 'transparent',
               }}
@@ -98,7 +98,7 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
               type="number"
               min="1"
               style={{
-                width: 80, fontFamily: 'Figtree,sans-serif', fontSize: 14, color: 'var(--text)',
+                width: 80, fontFamily: 'Figtree,sans-serif', fontSize: 16, color: 'var(--text)',
                 border: 'none', borderBottom: '1px solid var(--border)', padding: '5px 0',
                 outline: 'none', background: 'transparent',
               }}
@@ -106,13 +106,13 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', borderBottom: '1.5px solid var(--border)', marginTop: 8, padding: '0 20px' }}>
+        <div style={{ display: 'flex', borderBottom: '1.5px solid var(--border)', marginTop: 8, padding: '0 24px' }}>
           {['ingredients', 'recipe'].map(t => (
             <div
               key={t}
               onClick={() => setTab(t)}
               style={{
-                padding: '10px 20px', cursor: 'pointer', fontSize: 14, fontWeight: 700,
+                padding: '8px 16px', cursor: 'pointer', fontSize: 16, fontWeight: 900,
                 color: tab === t ? 'var(--accent)' : 'var(--text2)',
                 borderBottom: tab === t ? '2.5px solid var(--accent)' : '2.5px solid transparent',
                 marginBottom: -1.5, textTransform: 'capitalize', transition: 'color 0.2s',
@@ -129,10 +129,10 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
           <>
             {ingredients.map((ing, i) => (
               <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '11px 4px', borderBottom: '1px solid var(--border)',
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '12px 4px', borderBottom: '1px solid var(--border)',
               }}>
-                <span style={{ flex: 1, fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>{ing}</span>
+                <span style={{ flex: 1, fontSize: 16, fontWeight: 400, color: 'var(--text)' }}>{ing}</span>
                 <button
                   onClick={() => setIngredients(prev => prev.filter((_, j) => j !== i))}
                   style={{
@@ -159,7 +159,7 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
             onChange={e => setSteps(e.target.value)}
             placeholder="Write your recipe steps here…&#10;&#10;Separate steps with a blank line."
             style={{
-              width: '100%', minHeight: 280, fontFamily: 'Figtree,sans-serif', fontSize: 15,
+              width: '100%', minHeight: 280, fontFamily: 'Figtree,sans-serif', fontSize: 16,
               border: '1.5px dashed var(--border)', borderRadius: 16, padding: '14px 16px',
               outline: 'none', background: 'var(--surface2)', resize: 'none',
               color: 'var(--text)', lineHeight: 1.7, marginTop: 4,
@@ -168,15 +168,15 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
         )}
 
         {recipe && (
-          <div style={{ marginTop: 32, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+          <div style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border)' }}>
             <button
               onClick={() => setConfirmRemove(true)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 background: 'none', border: '1.5px solid var(--danger)',
-                borderRadius: 999, padding: '10px 20px',
+                borderRadius: 999, padding: '8px 16px',
                 color: 'var(--danger)', fontFamily: 'Figtree,sans-serif',
-                fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                fontSize: 16, fontWeight: 700, cursor: 'pointer',
               }}
             >
               <IconTrash />
@@ -196,20 +196,20 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
           }}>
             <div style={{
               background: 'var(--surface)', borderRadius: 'var(--radius-xl)',
-              padding: '28px 24px', width: '100%', maxWidth: 360,
+              padding: '24px 24px', width: '100%', maxWidth: 360,
               boxShadow: 'var(--shadow-lg)',
               animation: 'toastIn 0.2s var(--spring) both',
             }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Remove recipe?</h2>
-              <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.5 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: 'var(--text)', marginBottom: 8 }}>Remove recipe?</h2>
+              <p style={{ fontSize: 16, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.5 }}>
                 "{recipe.name}" will be permanently deleted.
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <button
                   onClick={async () => { await removeRecipe(recipe.id); onRemove?.() }}
                   style={{
-                    padding: '13px', background: 'var(--danger)', color: '#fff', border: 'none',
-                    borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 15,
+                    padding: '16px', background: 'var(--danger)', color: '#fff', border: 'none',
+                    borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 16,
                     fontWeight: 700, cursor: 'pointer',
                   }}
                 >

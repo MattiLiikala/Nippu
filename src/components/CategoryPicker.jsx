@@ -75,7 +75,7 @@ export default function CategoryPicker({ value, onChange, categories = [] }) {
               placeholder="New category…"
               style={{
                 border: '1.5px solid var(--border)', borderRadius: 'var(--radius-sm)',
-                padding: '7px 10px', fontFamily: 'Figtree,sans-serif', fontSize: 13,
+                padding: '8px 12px', fontFamily: 'Figtree,sans-serif', fontSize: 12,
                 color: 'var(--text)', background: 'var(--bg)', outline: 'none',
                 width: '100%', marginBottom: 4,
               }}
@@ -111,7 +111,7 @@ function opt(active) {
     padding: '8px 12px', borderRadius: 'var(--radius-sm)', border: 'none',
     background: active ? 'var(--accent-lt)' : 'transparent',
     color: active ? 'var(--accent-dk)' : 'var(--text)',
-    fontFamily: 'Figtree,sans-serif', fontSize: 13, fontWeight: 600,
+    fontFamily: 'Figtree,sans-serif', fontSize: 12, fontWeight: 700,
     cursor: 'pointer', textAlign: 'left', width: '100%',
   }
 }

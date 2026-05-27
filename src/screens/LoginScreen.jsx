@@ -33,7 +33,7 @@ export default function LoginScreen() {
     <div className="screen">
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column',
-        justifyContent: 'center', padding: '32px 28px 48px', overflowY: 'auto',
+        justifyContent: 'center', padding: '24px 24px 24px', overflowY: 'auto',
       }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <img
@@ -46,7 +46,7 @@ export default function LoginScreen() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
             <label style={{
-              fontSize: 13, fontWeight: 700, color: 'var(--text2)',
+              fontSize: 12, fontWeight: 900, color: 'var(--text2)',
               marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: '0.06em',
             }}>Household name</label>
             <input
@@ -60,7 +60,7 @@ export default function LoginScreen() {
           </div>
           <div>
             <label style={{
-              fontSize: 13, fontWeight: 700, color: 'var(--text2)',
+              fontSize: 12, fontWeight: 900, color: 'var(--text2)',
               marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: '0.06em',
             }}>Password</label>
             <input
@@ -75,7 +75,7 @@ export default function LoginScreen() {
           </div>
 
           {error && (
-            <p style={{ fontSize: 14, color: 'oklch(0.55 0.18 25)', fontWeight: 500, marginTop: -4 }}>
+            <p style={{ fontSize: 16, color: 'oklch(0.55 0.18 25)', fontWeight: 400, marginTop: -4 }}>
               {error}
             </p>
           )}
@@ -86,7 +86,7 @@ export default function LoginScreen() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-            <span style={{ fontSize: 13, color: 'var(--text2)', fontWeight: 500 }}>or</span>
+            <span style={{ fontSize: 12, color: 'var(--text2)', fontWeight: 400 }}>or</span>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
 

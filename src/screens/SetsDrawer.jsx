@@ -24,7 +24,7 @@ function SortableSetItem({ item, setId, isAdded, onRemove, onAdd }) {
       ref={setNodeRef}
       style={{
         display: 'flex', alignItems: 'center', gap: 8,
-        padding: '10px 0', borderBottom: '1px solid var(--border)',
+        padding: '12px 0', borderBottom: '1px solid var(--border)',
         opacity: isDragging ? 0 : 1,
         transform: CSS.Transform.toString(transform),
         transition,
@@ -42,7 +42,7 @@ function SortableSetItem({ item, setId, isAdded, onRemove, onAdd }) {
         <IconTrash />
       </button>
       <span style={{
-        flex: 1, fontSize: 15, fontWeight: 500,
+        flex: 1, fontSize: 16, fontWeight: 400,
         color: isAdded ? 'var(--text2)' : 'var(--text)',
         textDecoration: isAdded ? 'line-through' : 'none',
         transition: 'all 0.2s',
@@ -56,7 +56,7 @@ function SortableSetItem({ item, setId, isAdded, onRemove, onAdd }) {
           background: isAdded ? 'var(--surface2)' : 'var(--accent)',
           color: isAdded ? 'var(--text2)' : '#fff',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 20, fontWeight: 300, cursor: isAdded ? 'default' : 'pointer',
+          fontSize: 20, fontWeight: 500, cursor: isAdded ? 'default' : 'pointer',
           transition: 'all 0.2s var(--spring)',
           transform: isAdded ? 'scale(0.9)' : 'scale(1)',
           fontFamily: 'Figtree,sans-serif', flexShrink: 0,
@@ -85,7 +85,7 @@ function SetItemOverlay({ item }) {
       borderRadius: 'var(--radius-md)',
       boxShadow: 'var(--shadow-lg)',
     }}>
-      <span style={{ flex: 1, fontSize: 15, fontWeight: 500, color: 'var(--text)' }}>{item.name}</span>
+      <span style={{ flex: 1, fontSize: 16, fontWeight: 400, color: 'var(--text)' }}>{item.name}</span>
       <div style={{ padding: '4px 0 4px 8px', color: 'var(--border)' }}><IconGrip /></div>
     </div>
   )
@@ -103,7 +103,7 @@ function SortableSetSectionHeader({ id, name, onRename }) {
       <EditableSectionHeader
         name={name}
         onRename={onRename}
-        style={{ margin: '10px 0 4px' }}
+        style={{ margin: '8px 0 4px' }}
         sectionDrag={{ ref: setActivatorNodeRef, listeners, attributes }}
       />
     </div>
@@ -116,7 +116,7 @@ function OtherSetSectionHeader() {
   return (
     <div ref={setNodeRef}
       className="section-header"
-      style={{ margin: '10px 0 4px', transform: CSS.Transform.toString(transform), transition }}>
+      style={{ margin: '8px 0 4px', transform: CSS.Transform.toString(transform), transition }}>
       Other
     </div>
   )
@@ -325,8 +325,8 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
       >
         <div className="drawer">
           <div className="drawer-handle" />
-          <div style={{ padding: '0 20px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.3px' }}>
+          <div style={{ padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.3px' }}>
               Saved items
             </h2>
             <button
@@ -341,7 +341,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
           </div>
 
           {/* Set tabs */}
-          <div style={{ display: 'flex', gap: 8, padding: '12px 20px', overflowX: 'auto' }}>
+          <div style={{ display: 'flex', gap: 8, padding: '8px 24px', overflowX: 'auto' }}>
             {sets.map((s, i) => (
               <button
                 key={s.id}
@@ -350,7 +350,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                   padding: '8px 16px', borderRadius: 999, border: 'none',
                   background: activeIdx === i ? 'var(--accent)' : 'var(--surface2)',
                   color: activeIdx === i ? '#fff' : 'var(--text2)',
-                  fontFamily: 'Figtree,sans-serif', fontSize: 13, fontWeight: 700,
+                  fontFamily: 'Figtree,sans-serif', fontSize: 12, fontWeight: 700,
                   cursor: 'pointer', flexShrink: 0,
                   transition: 'all 0.2s var(--spring)',
                   transform: activeIdx === i ? 'scale(1.05)' : 'scale(1)',
@@ -364,7 +364,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
               style={{
                 padding: '8px 16px', borderRadius: 999, background: 'none',
                 border: '1.5px dashed var(--border)', color: 'var(--text2)',
-                fontFamily: 'Figtree,sans-serif', fontSize: 13, fontWeight: 600,
+                fontFamily: 'Figtree,sans-serif', fontSize: 12, fontWeight: 700,
                 cursor: 'pointer', flexShrink: 0,
               }}
             >
@@ -374,7 +374,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
 
           {/* Description + three-dots menu */}
           {currentSet && (
-            <div style={{ padding: '0 20px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <div style={{ padding: '0 24px 8px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
               <div style={{ flex: 1 }}>
                 {descEditing ? (
                   <input
@@ -394,9 +394,9 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                     }}
                     style={{
                       display: 'block', width: '100%', boxSizing: 'border-box',
-                      fontSize: 13, fontWeight: 400, color: 'var(--text2)',
+                      fontSize: 12, fontWeight: 500, color: 'var(--text2)',
                       letterSpacing: '0.08em',
-                      padding: '6px 0 3px',
+                      padding: '8px 0 4px',
                       background: 'transparent', border: 'none', outline: 'none',
                       borderBottom: '1.5px solid var(--text2)',
                       fontFamily: 'Figtree,sans-serif',
@@ -406,8 +406,8 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                   <span
                     onClick={() => { setDescDraft(currentSet.description || ''); setDescEditing(true) }}
                     style={{
-                      display: 'block', fontSize: 13, fontWeight: 400,
-                      letterSpacing: '0.08em', paddingTop: 6,
+                      display: 'block', fontSize: 12, fontWeight: 400,
+                      letterSpacing: '0.08em', paddingTop: 8,
                       color: currentSet.description ? 'var(--text2)' : 'var(--border)',
                       cursor: 'text',
                     }}
@@ -435,10 +435,10 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                       <button
                         onClick={() => { setSetMenuOpen(false); setConfirmRemoveSet(true) }}
                         style={{
-                          display: 'flex', alignItems: 'center', gap: 10,
+                          display: 'flex', alignItems: 'center', gap: 12,
                           width: '100%', padding: '12px 16px', background: 'none', border: 'none',
                           color: 'var(--danger)', fontFamily: 'Figtree,sans-serif',
-                          fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'left',
+                          fontSize: 16, fontWeight: 700, cursor: 'pointer', textAlign: 'left',
                         }}
                       >
                         <IconTrash />
@@ -461,15 +461,15 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
               }}>
                 <div style={{
                   background: 'var(--surface)', borderRadius: 'var(--radius-xl)',
-                  padding: '28px 24px', width: '100%', maxWidth: 360,
+                  padding: '24px 24px', width: '100%', maxWidth: 360,
                   boxShadow: 'var(--shadow-lg)',
                   animation: 'toastIn 0.2s var(--spring) both',
                 }}>
-                  <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Remove set?</h2>
-                  <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.5 }}>
+                  <h2 style={{ fontSize: 20, fontWeight: 900, color: 'var(--text)', marginBottom: 8 }}>Remove set?</h2>
+                  <p style={{ fontSize: 16, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.5 }}>
                     "{currentSet.name}" and all its items will be permanently deleted.
                   </p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                     <button
                       onClick={async () => {
                         await removeSet(listId, currentSet.id)
@@ -477,8 +477,8 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                         setActiveIdx(0)
                       }}
                       style={{
-                        padding: '13px', background: 'var(--danger)', color: '#fff', border: 'none',
-                        borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 15,
+                        padding: '16px', background: 'var(--danger)', color: '#fff', border: 'none',
+                        borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 16,
                         fontWeight: 700, cursor: 'pointer',
                       }}
                     >
@@ -494,11 +494,11 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
           )}
 
           {/* Items area */}
-          <div style={{ padding: '0 20px', maxHeight: 300, overflowY: 'auto' }}>
+          <div style={{ padding: '0 24px', maxHeight: 300, overflowY: 'auto' }}>
             {loadingsets && sets.length === 0 ? (
-              <p style={{ color: 'var(--text2)', fontSize: 15, padding: '20px 0' }}>Loading…</p>
+              <p style={{ color: 'var(--text2)', fontSize: 16, padding: '16px 0' }}>Loading…</p>
             ) : !currentSet ? (
-              <p style={{ color: 'var(--text2)', fontSize: 15, padding: '20px 0' }}>No sets yet. Create one above.</p>
+              <p style={{ color: 'var(--text2)', fontSize: 16, padding: '16px 0' }}>No sets yet. Create one above.</p>
             ) : (
               <SortableContext items={flatList.map(e => e.id)} strategy={verticalListSortingStrategy}>
                 {flatList.map(entry => {
@@ -545,9 +545,9 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                         placeholder="Section name…"
                         style={{
                           display: 'block', width: '100%', boxSizing: 'border-box',
-                          fontSize: 13, fontWeight: 700, color: 'var(--text)',
+                          fontSize: 12, fontWeight: 700, color: 'var(--text)',
                           letterSpacing: '0.08em',
-                          padding: '6px 0 4px',
+                          padding: '8px 0 4px',
                           background: 'transparent', border: 'none', outline: 'none',
                           borderBottom: '1.5px solid var(--accent)',
                           fontFamily: 'Figtree,sans-serif',
@@ -580,8 +580,8 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                       style={{
                         background: 'transparent', color: 'var(--text2)',
                         border: '1.5px dashed var(--border)', borderRadius: 999,
-                        padding: '6px 14px', fontFamily: 'Figtree,sans-serif',
-                        fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                        padding: '8px 16px', fontFamily: 'Figtree,sans-serif',
+                        fontSize: 12, fontWeight: 700, cursor: 'pointer',
                       }}
                     >
                       + Section

@@ -17,13 +17,13 @@ export default function AddToListScreen({ recipe, picked, onBack, onDone }) {
 
   return (
     <div className="screen" style={{ position: 'relative' }}>
-      <div style={{ padding: '16px 20px 12px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
+      <div style={{ padding: '16px 24px 8px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         <button className="back-btn" onClick={onBack}>
           <IconBack />
         </button>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.3px' }}>Add to list</h1>
-          <p style={{ fontSize: 13, color: 'var(--text2)', marginTop: 1 }}>{pickedItems.length} ingredients selected</p>
+          <p style={{ fontSize: 12, color: 'var(--text2)', marginTop: 1 }}>{pickedItems.length} ingredients selected</p>
         </div>
       </div>
 
@@ -34,7 +34,7 @@ export default function AddToListScreen({ recipe, picked, onBack, onDone }) {
             <div
               key={i}
               style={{
-                display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0',
+                display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0',
                 borderBottom: i < pickedItems.length - 1 ? '1px solid var(--border)' : 'none',
               }}
             >
@@ -45,7 +45,7 @@ export default function AddToListScreen({ recipe, picked, onBack, onDone }) {
               }}>
                 <IconCheck size={10} />
               </div>
-              <span style={{ fontSize: 15, fontWeight: 500, color: 'var(--text)' }}>{ing}</span>
+              <span style={{ fontSize: 16, fontWeight: 400, color: 'var(--text)' }}>{ing}</span>
             </div>
           ))}
         </div>
@@ -59,10 +59,10 @@ export default function AddToListScreen({ recipe, picked, onBack, onDone }) {
             style={{
               border: selectedList === list.id ? '2px solid var(--accent)' : '2px solid transparent',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '14px 18px',
+              padding: '16px 24px',
             }}
           >
-            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)' }}>{list.name}</span>
+            <span style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)' }}>{list.name}</span>
             <div style={{
               width: 22, height: 22, borderRadius: '50%',
               border: `2px solid ${selectedList === list.id ? 'var(--accent)' : 'var(--border)'}`,
@@ -81,7 +81,7 @@ export default function AddToListScreen({ recipe, picked, onBack, onDone }) {
           <button
             className="btn-primary"
             onClick={handleConfirm}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px' }}
           >
             <span>Add to {lists.find(l => l.id === selectedList)?.name}</span>
             <IconArrowRight />

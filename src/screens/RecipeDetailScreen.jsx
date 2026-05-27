@@ -15,7 +15,7 @@ export default function RecipeDetailScreen({ recipe, picked, onPick, onBack, onA
   return (
     <div className="screen" style={{ position: 'relative' }}>
       <div style={{ background: 'var(--bg)', flexShrink: 0 }}>
-        <div style={{ padding: '16px 20px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+        <div style={{ padding: '16px 24px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
           <button className="back-btn" onClick={onBack}>
             <IconBack />
           </button>
@@ -24,7 +24,7 @@ export default function RecipeDetailScreen({ recipe, picked, onPick, onBack, onA
               fontSize: 20, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.3px',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>{recipe.name}</h1>
-            <p style={{ fontSize: 13, color: 'var(--text2)', marginTop: 1 }}>
+            <p style={{ fontSize: 12, color: 'var(--text2)', marginTop: 1 }}>
               {recipe.time} · serves {recipe.serves}
             </p>
           </div>
@@ -34,13 +34,13 @@ export default function RecipeDetailScreen({ recipe, picked, onPick, onBack, onA
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '1.5px solid var(--border)', marginTop: 4, padding: '0 20px' }}>
+        <div style={{ display: 'flex', borderBottom: '1.5px solid var(--border)', marginTop: 4, padding: '0 24px' }}>
           {['ingredients', 'recipe'].map(t => (
             <div
               key={t}
               onClick={() => setTab(t)}
               style={{
-                padding: '10px 20px', cursor: 'pointer', fontSize: 14, fontWeight: 700,
+                padding: '8px 16px', cursor: 'pointer', fontSize: 16, fontWeight: 900,
                 color: tab === t ? 'var(--accent)' : 'var(--text2)',
                 borderBottom: tab === t ? '2.5px solid var(--accent)' : '2.5px solid transparent',
                 marginBottom: -1.5, textTransform: 'capitalize', transition: 'color 0.2s',
@@ -52,14 +52,14 @@ export default function RecipeDetailScreen({ recipe, picked, onPick, onBack, onA
         </div>
       </div>
 
-      <div className="scroll-area" style={{ paddingTop: 4, paddingBottom: selCount > 0 ? 120 : 40 }}>
+      <div className="scroll-area" style={{ paddingTop: 8, paddingBottom: selCount > 0 ? 120 : 40 }}>
         {tab === 'ingredients' ? (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 4px 8px' }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--text2)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 {recipe.ingredients.length} ingredients
               </span>
-              <span onClick={selectAll} style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent)', cursor: 'pointer' }}>
+              <span onClick={selectAll} style={{ fontSize: 12, fontWeight: 900, color: 'var(--accent)', cursor: 'pointer' }}>
                 Select all
               </span>
             </div>
@@ -81,7 +81,7 @@ export default function RecipeDetailScreen({ recipe, picked, onPick, onBack, onA
                 }}>
                   {picked[i] && <IconCheck />}
                 </div>
-                <span style={{ fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>{ing}</span>
+                <span style={{ fontSize: 16, fontWeight: 400, color: 'var(--text)' }}>{ing}</span>
               </div>
             ))}
           </>
@@ -94,9 +94,9 @@ export default function RecipeDetailScreen({ recipe, picked, onPick, onBack, onA
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   flexShrink: 0, marginTop: 1,
                 }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: 'var(--accent-dk)' }}>{i + 1}</span>
+                  <span style={{ fontSize: 12, fontWeight: 900, color: 'var(--accent-dk)' }}>{i + 1}</span>
                 </div>
-                <p style={{ fontSize: 15, color: 'var(--text)', lineHeight: 1.6, fontWeight: 400 }}>{step}</p>
+                <p style={{ fontSize: 16, color: 'var(--text)', lineHeight: 1.6, fontWeight: 400 }}>{step}</p>
               </div>
             ))}
           </div>
@@ -108,7 +108,7 @@ export default function RecipeDetailScreen({ recipe, picked, onPick, onBack, onA
           <button
             className="btn-primary"
             onClick={onAddToList}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px' }}
           >
             <span>Add {selCount} ingredient{selCount > 1 ? 's' : ''} to list</span>
             <IconArrowRight />

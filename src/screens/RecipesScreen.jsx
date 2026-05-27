@@ -56,11 +56,11 @@ export default function RecipesScreen() {
       </div>
 
       {/* Search */}
-      <div style={{ padding: '0 20px 12px', flexShrink: 0 }}>
+      <div style={{ padding: '0 24px 8px', flexShrink: 0 }}>
         <div style={{
-          display: 'flex', alignItems: 'center', gap: 10,
+          display: 'flex', alignItems: 'center', gap: 8,
           background: 'var(--surface)', borderRadius: 20,
-          padding: '10px 16px', border: '1.5px solid var(--border)',
+          padding: '12px 16px', border: '1.5px solid var(--border)',
         }}>
           <IconSearch />
           <input
@@ -70,7 +70,7 @@ export default function RecipesScreen() {
             style={{
               flex: 1, border: 'none', outline: 'none',
               background: 'transparent', fontFamily: 'Figtree,sans-serif',
-              fontSize: 15, color: 'var(--text)',
+              fontSize: 16, color: 'var(--text)',
             }}
           />
         </div>
@@ -86,15 +86,15 @@ export default function RecipesScreen() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.2px' }}>
+                <h2 style={{ fontSize: 20, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.2px' }}>
                   {r.name}
                 </h2>
-                <p style={{ fontSize: 13, color: 'var(--text2)', marginTop: 3, fontWeight: 500 }}>
+                <p style={{ fontSize: 12, color: 'var(--text2)', marginTop: 3, fontWeight: 400 }}>
                   {r.time} · serves {r.serves}
                 </p>
-                <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                   {r.tags.map((tag, j) => (
-                    <span key={j} className="chip" style={{ fontSize: 11, padding: '3px 10px' }}>{tag}</span>
+                    <span key={j} className="chip" style={{ fontSize: 12, padding: '4px 8px' }}>{tag}</span>
                   ))}
                 </div>
               </div>
@@ -106,7 +106,7 @@ export default function RecipesScreen() {
         ))}
 
         {filtered.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text2)', fontSize: 15, fontWeight: 500 }}>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text2)', fontSize: 16, fontWeight: 400 }}>
             {query ? 'No matching recipes.' : 'No recipes yet. Tap + to create one.'}
           </div>
         )}

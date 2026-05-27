@@ -29,7 +29,7 @@ function SortableItem({ item, removing, onCheck }) {
       <div className={`check-circle${removing === item.id ? ' done' : ''}`} onClick={() => onCheck(item)}>
         {removing === item.id && <IconCheck />}
       </div>
-      <span style={{ flex: 1, fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>{item.name}</span>
+      <span style={{ flex: 1, fontSize: 16, fontWeight: 400, color: 'var(--text)' }}>{item.name}</span>
       <div
         ref={setActivatorNodeRef}
         {...listeners}
@@ -53,7 +53,7 @@ function ItemOverlay({ item }) {
       cursor: 'grabbing',
     }}>
       <div style={{ width: 26, height: 26, borderRadius: '50%', border: '2px solid var(--border)', flexShrink: 0 }} />
-      <span style={{ flex: 1, fontSize: 16, fontWeight: 500, color: 'var(--text)' }}>{item.name}</span>
+      <span style={{ flex: 1, fontSize: 16, fontWeight: 400, color: 'var(--text)' }}>{item.name}</span>
       <div style={{ padding: '4px 0 4px 12px', color: 'var(--border)' }}><IconGrip /></div>
     </div>
   )
@@ -277,7 +277,7 @@ export default function ListScreen() {
   return (
     <div className="screen" style={{ position: 'relative' }}>
       <div style={{
-        padding: '16px 24px 12px', display: 'flex', alignItems: 'center',
+        padding: '16px 24px 8px', display: 'flex', alignItems: 'center',
         gap: 12, background: 'var(--bg)', flexShrink: 0,
       }}>
         <button className="back-btn" onClick={() => navigate('/lists')}>
@@ -299,7 +299,7 @@ export default function ListScreen() {
                 if (e.key === 'Escape') setTitleEditing(false)
               }}
               style={{
-                fontSize: 20, fontWeight: 800, color: 'var(--text)',
+                fontSize: 20, fontWeight: 900, color: 'var(--text)',
                 letterSpacing: '-0.3px', marginTop: 1,
                 background: 'transparent', border: 'none', outline: 'none',
                 borderBottom: '1.5px solid var(--accent)',
@@ -310,7 +310,7 @@ export default function ListScreen() {
           ) : (
             <h1
               onClick={() => { setTitleDraft(list.name); setTitleEditing(true) }}
-              style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.3px', marginTop: 1, cursor: 'text' }}
+              style={{ fontSize: 20, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.3px', marginTop: 1, cursor: 'text' }}
             >
               {list.name}
             </h1>
@@ -335,10 +335,10 @@ export default function ListScreen() {
                 <button
                   onClick={() => { setMenuOpen(false); setConfirmRemove(true) }}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
+                    display: 'flex', alignItems: 'center', gap: 12,
                     width: '100%', padding: '12px 16px', background: 'none', border: 'none',
                     color: 'var(--danger)', fontFamily: 'Figtree,sans-serif',
-                    fontSize: 14, fontWeight: 600, cursor: 'pointer', textAlign: 'left',
+                    fontSize: 16, fontWeight: 700, cursor: 'pointer', textAlign: 'left',
                   }}
                 >
                   <IconTrash />
@@ -360,20 +360,20 @@ export default function ListScreen() {
           }}>
             <div style={{
               background: 'var(--surface)', borderRadius: 'var(--radius-xl)',
-              padding: '28px 24px', width: '100%', maxWidth: 360,
+              padding: '24px 24px', width: '100%', maxWidth: 360,
               boxShadow: 'var(--shadow-lg)',
               animation: 'toastIn 0.2s var(--spring) both',
             }}>
-              <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)', marginBottom: 8 }}>Remove list?</h2>
-              <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.5 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: 'var(--text)', marginBottom: 8 }}>Remove list?</h2>
+              <p style={{ fontSize: 16, color: 'var(--text2)', marginBottom: 24, lineHeight: 1.5 }}>
                 "{list.name}" and all its items will be permanently deleted.
               </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <button
                   onClick={async () => { await removeList(list.id); navigate('/lists') }}
                   style={{
-                    padding: '13px', background: 'var(--danger)', color: '#fff', border: 'none',
-                    borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 15,
+                    padding: '16px', background: 'var(--danger)', color: '#fff', border: 'none',
+                    borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 16,
                     fontWeight: 700, cursor: 'pointer',
                   }}
                 >
@@ -397,7 +397,7 @@ export default function ListScreen() {
         measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
         autoScroll={{ layoutShiftCompensation: false }}
       >
-        <div className="scroll-area" style={{ paddingTop: 4, paddingBottom: 120 }}>
+        <div className="scroll-area" style={{ paddingTop: 8, paddingBottom: 120 }}>
           <SortableContext items={flatList.map(e => e.id)} strategy={verticalListSortingStrategy}>
             {flatList.map(entry => {
               if (entry.id === 'sec:') return <OtherSectionHeader key="sec:" />
@@ -414,7 +414,7 @@ export default function ListScreen() {
           </SortableContext>
 
           {list.items.length === 0 && !lastRemoved && (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)', fontSize: 15, fontWeight: 500 }}>
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)', fontSize: 16, fontWeight: 400 }}>
               All done! Add items below.
             </div>
           )}
@@ -450,9 +450,9 @@ export default function ListScreen() {
                   placeholder="Section name…"
                   style={{
                     display: 'block', width: '100%', boxSizing: 'border-box',
-                    fontSize: 13, fontWeight: 700, color: 'var(--text)',
+                    fontSize: 12, fontWeight: 700, color: 'var(--text)',
                     letterSpacing: '0.08em',
-                    padding: '6px 0 4px',
+                    padding: '8px 0 4px',
                     background: 'transparent', border: 'none', outline: 'none',
                     borderBottom: '1.5px solid var(--accent)',
                     fontFamily: 'Figtree,sans-serif',
@@ -483,10 +483,10 @@ export default function ListScreen() {
               <button
                 onClick={() => setAddingSection(true)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 6,
+                  display: 'flex', alignItems: 'center', gap: 8,
                   background: 'transparent', color: 'var(--text2)',
-                  border: '1.5px dashed var(--border)', borderRadius: 999, padding: '10px 16px',
-                  fontFamily: 'Figtree,sans-serif', fontSize: 14, fontWeight: 700,
+                  border: '1.5px dashed var(--border)', borderRadius: 999, padding: '8px 16px',
+                  fontFamily: 'Figtree,sans-serif', fontSize: 16, fontWeight: 700,
                   cursor: 'pointer',
                 }}
               >
@@ -497,7 +497,7 @@ export default function ListScreen() {
 
           {lastRemoved && (
             <div className="undo-toast">
-              <span style={{ fontSize: 14, fontWeight: 500 }}>Removed: {lastRemoved.name}</span>
+              <span style={{ fontSize: 16, fontWeight: 400 }}>Removed: {lastRemoved.name}</span>
               <button className="undo-btn" onClick={handleUndo}>Undo</button>
             </div>
           )}
@@ -518,7 +518,7 @@ export default function ListScreen() {
           background: 'var(--accent)', color: '#fff',
           border: 'none', borderRadius: 999,
           padding: '12px 24px',
-          fontFamily: 'Figtree,sans-serif', fontSize: 15, fontWeight: 700,
+          fontFamily: 'Figtree,sans-serif', fontSize: 16, fontWeight: 700,
           cursor: 'pointer', zIndex: 15,
           whiteSpace: 'nowrap',
         }}

@@ -25,10 +25,10 @@ export function EditableSectionHeader({ name, onRename, style, sectionDrag }) {
         }}
         style={{
           display: 'block', width: '100%',
-          fontSize: 13, fontWeight: 700, color: 'var(--accent)',
+          fontSize: 12, fontWeight: 700, color: 'var(--accent)',
           letterSpacing: '0.08em',
-          margin: '20px 0 10px',
-          padding: '0 0 3px',
+          margin: '20px 0 8px',
+          padding: '0 0 4px',
           background: 'transparent',
           border: 'none', outline: 'none',
           borderBottom: '1.5px solid var(--accent)',

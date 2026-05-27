@@ -30,18 +30,18 @@ export default function HomeScreen() {
   return (
     <div className="screen" style={{ position: 'relative' }}>
       <div style={{ padding: '24px 24px 8px', flexShrink: 0 }}>
-        <h1 style={{ fontSize: 26, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.5px' }}>
+        <h1 style={{ fontSize: 24, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.5px' }}>
           {household?.name}
         </h1>
       </div>
 
       <div className="scroll-area" style={{ paddingTop: 8, paddingBottom: 100 }}>
         {loading && lists.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text2)', fontSize: 15 }}>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text2)', fontSize: 16 }}>
             Loading…
           </div>
         ) : lists.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text2)', fontSize: 15, fontWeight: 500 }}>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text2)', fontSize: 16, fontWeight: 400 }}>
             No lists yet. Tap + to create one.
           </div>
         ) : (
@@ -55,11 +55,11 @@ export default function HomeScreen() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
                 <div style={{ minWidth: 0 }}>
                   <h2 style={{
-                    fontSize: 18, fontWeight: 800, color: 'var(--text)',
+                    fontSize: 20, fontWeight: 900, color: 'var(--text)',
                     letterSpacing: '-0.3px', whiteSpace: 'nowrap',
                     overflow: 'hidden', textOverflow: 'ellipsis',
                   }}>{list.name}</h2>
-                  <p style={{ fontSize: 13, color: 'var(--text2)', marginTop: 4, fontWeight: 500 }}>
+                  <p style={{ fontSize: 12, color: 'var(--text2)', marginTop: 4, fontWeight: 400 }}>
                     {list.items.length} {list.items.length === 1 ? 'item' : 'items'}
                   </p>
                 </div>
@@ -79,8 +79,8 @@ export default function HomeScreen() {
           <div className="overlay" onClick={() => setNewListOpen(false)} />
           <div className="drawer" style={{ paddingBottom: 24 }}>
             <div className="drawer-handle" />
-            <div style={{ padding: '0 20px' }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 16 }}>New list</h2>
+            <div style={{ padding: '0 24px' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: 'var(--text)', marginBottom: 16 }}>New list</h2>
               <input
                 autoFocus
                 className="input-field"

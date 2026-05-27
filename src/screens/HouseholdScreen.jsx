@@ -57,14 +57,14 @@ export default function HouseholdScreen() {
   return (
     <div className="screen">
       <div style={{ padding: '24px 24px 8px', flexShrink: 0 }}>
-        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text2)', marginBottom: 2 }}>{household?.name}</p>
+        <p style={{ fontSize: 12, fontWeight: 900, color: 'var(--text2)', marginBottom: 2 }}>{household?.name}</p>
         <h1 style={{ fontSize: 28, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.5px' }}>Household</h1>
       </div>
       <div className="scroll-area" style={{ paddingBottom: 100 }}>
         <div className="section-header">Appearance</div>
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>Dark mode</p>
+            <p style={{ fontSize: 16, fontWeight: 900, color: 'var(--text)' }}>Dark mode</p>
             <button
               onClick={toggleDark}
               aria-label="Toggle dark mode"
@@ -88,7 +88,7 @@ export default function HouseholdScreen() {
 
         <div className="section-header">General</div>
         <div className="card">
-          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <p style={{ fontSize: 12, fontWeight: 900, color: 'var(--text2)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Name
           </p>
           {nameEditing ? (
@@ -102,12 +102,12 @@ export default function HouseholdScreen() {
                 style={{ marginBottom: 8, borderColor: 'var(--accent)' }}
                 disabled={nameSaving}
               />
-              {nameError && <p style={{ fontSize: 13, color: 'var(--danger)', marginBottom: 8 }}>{nameError}</p>}
+              {nameError && <p style={{ fontSize: 12, color: 'var(--danger)', marginBottom: 8 }}>{nameError}</p>}
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn-primary" style={{ padding: '10px 24px', width: 'auto', fontSize: 14, opacity: nameSaving ? 0.7 : 1 }} onClick={handleSaveName} disabled={nameSaving}>
+                <button className="btn-primary" style={{ padding: '12px 24px', width: 'auto', fontSize: 16, opacity: nameSaving ? 0.7 : 1 }} onClick={handleSaveName} disabled={nameSaving}>
                   {nameSaving ? 'Saving…' : 'Save'}
                 </button>
-                <button className="btn-ghost" style={{ padding: '10px 24px', width: 'auto', fontSize: 14 }} onClick={() => { setNameEditing(false); setNameError('') }}>
+                <button className="btn-ghost" style={{ padding: '12px 24px', width: 'auto', fontSize: 16 }} onClick={() => { setNameEditing(false); setNameError('') }}>
                   Cancel
                 </button>
               </div>
@@ -115,7 +115,7 @@ export default function HouseholdScreen() {
           ) : (
             <>
               <input type="text" value={household?.name ?? ''} disabled className="input-field" style={{ marginBottom: 12 }} readOnly />
-              <button className="btn-ghost" style={{ padding: '10px 24px', width: 'auto', fontSize: 14 }} onClick={() => { setNameDraft(household?.name ?? ''); setNameEditing(true) }}>
+              <button className="btn-ghost" style={{ padding: '12px 24px', width: 'auto', fontSize: 16 }} onClick={() => { setNameDraft(household?.name ?? ''); setNameEditing(true) }}>
                 Rename
               </button>
             </>
@@ -124,7 +124,7 @@ export default function HouseholdScreen() {
 
         <div className="section-header">Access</div>
         <div className="card">
-          <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text2)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <p style={{ fontSize: 12, fontWeight: 900, color: 'var(--text2)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             Password
           </p>
           {editing ? (
@@ -148,13 +148,13 @@ export default function HouseholdScreen() {
                 disabled={saving}
               />
               {pwError && (
-                <p style={{ fontSize: 13, color: 'oklch(0.55 0.18 25)', marginBottom: 8 }}>{pwError}</p>
+                <p style={{ fontSize: 12, color: 'oklch(0.55 0.18 25)', marginBottom: 8 }}>{pwError}</p>
               )}
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn-primary" style={{ padding: '10px 24px', width: 'auto', fontSize: 14, opacity: saving ? 0.7 : 1 }} onClick={handleSave} disabled={saving}>
+                <button className="btn-primary" style={{ padding: '12px 24px', width: 'auto', fontSize: 16, opacity: saving ? 0.7 : 1 }} onClick={handleSave} disabled={saving}>
                   {saving ? 'Saving…' : 'Save'}
                 </button>
-                <button className="btn-ghost" style={{ padding: '10px 24px', width: 'auto', fontSize: 14 }} onClick={() => { setEditing(false); setOldPw(''); setNewPw(''); setPwError('') }}>
+                <button className="btn-ghost" style={{ padding: '12px 24px', width: 'auto', fontSize: 16 }} onClick={() => { setEditing(false); setOldPw(''); setNewPw(''); setPwError('') }}>
                   Cancel
                 </button>
               </div>
@@ -162,7 +162,7 @@ export default function HouseholdScreen() {
           ) : (
             <>
               <input type="password" value="••••••••" disabled className="input-field" style={{ marginBottom: 12 }} readOnly />
-              <button className="btn-ghost" style={{ padding: '10px 24px', width: 'auto', fontSize: 14 }} onClick={() => setEditing(true)}>
+              <button className="btn-ghost" style={{ padding: '12px 24px', width: 'auto', fontSize: 16 }} onClick={() => setEditing(true)}>
                 Change password
               </button>
             </>
@@ -171,25 +171,25 @@ export default function HouseholdScreen() {
 
         <div className="section-header" style={{ marginTop: 24 }}>Danger zone</div>
         <div className="card">
-          <p style={{ fontSize: 14, color: 'var(--text2)', marginBottom: 12 }}>
+          <p style={{ fontSize: 16, color: 'var(--text2)', marginBottom: 12 }}>
             When logging out, make sure you remember your password.
           </p>
           {showLeaveConfirm ? (
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={handleLeave} style={{
                 background: 'oklch(0.55 0.18 25)', color: '#fff', border: 'none',
-                borderRadius: 999, padding: '10px 20px', fontFamily: 'Figtree,sans-serif',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                borderRadius: 999, padding: '8px 16px', fontFamily: 'Figtree,sans-serif',
+                fontSize: 16, fontWeight: 700, cursor: 'pointer',
               }}>Yes, log out</button>
-              <button className="btn-ghost" style={{ padding: '10px 20px', width: 'auto', fontSize: 14 }} onClick={() => setShowLeaveConfirm(false)}>
+              <button className="btn-ghost" style={{ padding: '8px 16px', width: 'auto', fontSize: 16 }} onClick={() => setShowLeaveConfirm(false)}>
                 Cancel
               </button>
             </div>
           ) : (
             <button onClick={() => setShowLeaveConfirm(true)} style={{
               background: 'none', border: '1.5px solid oklch(0.55 0.18 25)',
-              borderRadius: 999, padding: '10px 20px', fontFamily: 'Figtree,sans-serif',
-              fontSize: 14, fontWeight: 600, color: 'oklch(0.55 0.18 25)', cursor: 'pointer',
+              borderRadius: 999, padding: '8px 16px', fontFamily: 'Figtree,sans-serif',
+              fontSize: 16, fontWeight: 700, color: 'oklch(0.55 0.18 25)', cursor: 'pointer',
             }}>Log out</button>
           )}
         </div>
