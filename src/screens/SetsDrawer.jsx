@@ -243,6 +243,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
 
   // All category names used anywhere (main list items + all sets), deduplicated
   const listData = lists.find(l => l.id === listId)
+  const listItemNames = new Set((listData?.items ?? []).map(i => i.name.toLowerCase()))
   const allUsedSections = new Set()
   for (const item of listData?.items ?? []) { if (item.category) allUsedSections.add(item.category) }
   for (const set of sets) { for (const item of set.items ?? []) { if (item.category) allUsedSections.add(item.category) } }
@@ -516,7 +517,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                       key={entry.id}
                       item={entry}
                       setId={currentSet.id}
-                      isAdded={!!added[`${currentSet.id}-${entry.id}`]}
+                      isAdded={!!added[`${currentSet.id}-${entry.id}`] || listItemNames.has(entry.name.toLowerCase())}
                       onRemove={itemId => removeItemFromSet(listId, currentSet.id, itemId)}
                       onAdd={handleAdd}
                     />
