@@ -377,7 +377,7 @@ export default function ListScreen() {
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <button
-                  onClick={async () => { await removeList(list.id); navigate('/lists') }}
+                  onClick={() => { navigate('/lists'); removeList(list.id) }}
                   style={{
                     padding: '16px', background: 'var(--danger)', color: '#fff', border: 'none',
                     borderRadius: 999, fontFamily: 'Figtree,sans-serif', fontSize: 16,
