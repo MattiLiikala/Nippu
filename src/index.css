@@ -417,10 +417,10 @@ html, body {
   margin: 20px 0 8px;
 }
 
-/* ── Back button ───────────────────────────────────── */
-.back-btn {
-  width: 38px;
-  height: 38px;
+/* ── Icon button (secondary) ───────────────────────── */
+.icon-btn-secondary {
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: var(--surface);
   display: flex;
@@ -429,4 +429,15 @@ html, body {
   cursor: pointer;
   flex-shrink: 0;
   border: none;
+}
+
+/* ── Undo button pulse ─────────────────────────────── */
+@keyframes undoPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.22); }
+  70%  { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+.undo-pulse {
+  animation: undoPulse 0.4s var(--spring) both;
 }

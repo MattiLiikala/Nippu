@@ -14,7 +14,7 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { EditableSectionHeader } from '../components/DragDrop'
-import { IconBack, IconCheck, IconMore, IconSets, IconGrip, IconTrash } from '../components/Icons'
+import { IconBack, IconCheck, IconMore, IconSets, IconGrip, IconTrash, IconUndo } from '../components/Icons'
 
 // ── Sortable item ────────────────────────────────────────
 
@@ -23,11 +23,11 @@ function SortableItem({ item, removing, onCheck }) {
   return (
     <div
       ref={setNodeRef}
-      className={`item-row${removing === item.id ? ' removing' : ''}`}
+      className={`item-row${removing.has(item.id) ? ' removing' : ''}`}
       style={{ opacity: isDragging ? 0 : 1, transform: CSS.Transform.toString(transform), transition }}
     >
-      <div className={`check-circle${removing === item.id ? ' done' : ''}`} onClick={() => onCheck(item)}>
-        {removing === item.id && <IconCheck />}
+      <div className={`check-circle${removing.has(item.id) ? ' done' : ''}`} onClick={() => onCheck(item)}>
+        {removing.has(item.id) && <IconCheck />}
       </div>
       <span style={{ flex: 1, fontSize: 16, fontWeight: 400, color: 'var(--text)' }}>{item.name}</span>
       <div
@@ -109,8 +109,9 @@ export default function ListScreen() {
   const fetchSetsForList = useStore(s => s.fetchSetsForList)
 
   const list = lists.find(l => l.id === id)
-  const [removing, setRemoving] = useState(null)
-  const [lastRemoved, setLastRemoved] = useState(null)
+  const [removing, setRemoving] = useState(() => new Set())
+  const [removedHistory, setRemovedHistory] = useState([])
+  const [undoPulsing, setUndoPulsing] = useState(false)
   const [inputVal, setInputVal] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [activeId, setActiveId] = useState(null)
@@ -131,6 +132,9 @@ export default function ListScreen() {
 
   // Prefetch sets so their categories appear in section suggestions
   useEffect(() => { if (id) fetchSetsForList(id) }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Clear undo history when switching lists
+  useEffect(() => { setRemovedHistory([]) }, [id])
 
   if (!list) return (
     <div className="screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -182,20 +186,21 @@ export default function ListScreen() {
   // ── Handlers ──────────────────────────────────────────
 
   const handleCheck = (item) => {
-    if (removing === item.id) return
-    setRemoving(item.id)
+    if (removing.has(item.id)) return
+    setRemoving(prev => new Set([...prev, item.id]))
     setTimeout(() => {
       removeItem(list.id, item.id)
-      setLastRemoved(item)
-      setRemoving(null)
+      setRemovedHistory(prev => [...prev, item])
+      setUndoPulsing(true)
+      setRemoving(prev => { const s = new Set(prev); s.delete(item.id); return s })
     }, 220)
   }
 
   const handleUndo = () => {
-    if (lastRemoved) {
-      restoreItem(list.id, lastRemoved)
-      setLastRemoved(null)
-    }
+    if (!removedHistory.length) return
+    const item = removedHistory[removedHistory.length - 1]
+    restoreItem(list.id, item)
+    setRemovedHistory(prev => prev.slice(0, -1))
   }
 
   const handleAddItem = async (e) => {
@@ -282,7 +287,7 @@ export default function ListScreen() {
         padding: '16px 24px 8px', display: 'flex', alignItems: 'center',
         gap: 12, background: 'var(--bg)', flexShrink: 0,
       }}>
-        <button className="back-btn" onClick={() => navigate('/lists')}>
+        <button className="icon-btn-secondary" onClick={() => navigate('/lists')}>
           <IconBack />
         </button>
         <div style={{ flex: 1 }}>
@@ -497,12 +502,6 @@ export default function ListScreen() {
             )}
           </div>
 
-          {lastRemoved && (
-            <div className="undo-toast">
-              <span style={{ fontSize: 16, fontWeight: 400 }}>Removed: {lastRemoved.name}</span>
-              <button className="undo-btn" onClick={handleUndo}>Undo</button>
-            </div>
-          )}
         </div>
         <DragOverlay dropAnimation={null}>
           {activeItem && <ItemOverlay item={activeItem} />}
@@ -527,6 +526,23 @@ export default function ListScreen() {
       >
         <IconSets />
         Saved items
+      </button>
+
+      <button
+        className={undoPulsing ? 'icon-btn-secondary undo-pulse' : 'icon-btn-secondary'}
+        onClick={handleUndo}
+        onAnimationEnd={() => setUndoPulsing(false)}
+        style={{
+          position: 'absolute',
+          bottom: 14,
+          right: 24,
+          color: 'var(--text)',
+          cursor: removedHistory.length > 0 ? 'pointer' : 'default',
+          opacity: removedHistory.length > 0 ? 1 : 0.35,
+          zIndex: 15,
+        }}
+      >
+        <IconUndo />
       </button>
 
       {drawerOpen && (

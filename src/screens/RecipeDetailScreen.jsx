@@ -16,7 +16,7 @@ export default function RecipeDetailScreen({ recipe, picked, onPick, onBack, onA
     <div className="screen" style={{ position: 'relative' }}>
       <div style={{ background: 'var(--bg)', flexShrink: 0 }}>
         <div style={{ padding: '16px 24px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-          <button className="back-btn" onClick={onBack}>
+          <button className="icon-btn-secondary" onClick={onBack}>
             <IconBack />
           </button>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -28,7 +28,7 @@ export default function RecipeDetailScreen({ recipe, picked, onPick, onBack, onA
               {recipe.time} · serves {recipe.serves}
             </p>
           </div>
-          <button className="back-btn" onClick={onEdit}>
+          <button className="icon-btn-secondary" onClick={onEdit}>
             <IconEdit />
           </button>
         </div>

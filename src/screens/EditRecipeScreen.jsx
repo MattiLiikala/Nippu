@@ -53,7 +53,7 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
     <div className="screen">
       <div style={{ background: 'var(--bg)', flexShrink: 0 }}>
         <div style={{ padding: '16px 24px 0', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-          <button className="back-btn" onClick={onBack}>
+          <button className="icon-btn-secondary" onClick={onBack}>
             <IconBack />
           </button>
           <h1 style={{ flex: 1, fontSize: 20, fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.3px' }}>

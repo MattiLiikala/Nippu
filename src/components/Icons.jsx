@@ -150,6 +150,15 @@ export function IconSets() {
   )
 }
 
+export function IconUndo() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2.5 6.5h7a3 3 0 0 1 0 6H5" />
+      <polyline points="5 3.5 2.5 6.5 5 9.5" />
+    </svg>
+  )
+}
+
 export function IconGrip() {
   return (
     <svg width="14" height="16" viewBox="0 0 14 16" fill="currentColor">

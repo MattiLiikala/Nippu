@@ -18,7 +18,7 @@ export default function AddToListScreen({ recipe, picked, onBack, onDone }) {
   return (
     <div className="screen" style={{ position: 'relative' }}>
       <div style={{ padding: '16px 24px 8px', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-        <button className="back-btn" onClick={onBack}>
+        <button className="icon-btn-secondary" onClick={onBack}>
           <IconBack />
         </button>
         <div>
