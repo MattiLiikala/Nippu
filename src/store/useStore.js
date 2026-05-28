@@ -91,8 +91,8 @@ export const useStore = create(
       },
 
       async removeList(id) {
-        await api(`/lists/${id}`, { method: 'DELETE' })
         set(s => ({ lists: s.lists.filter(l => l.id !== id) }))
+        api(`/lists/${id}`, { method: 'DELETE' }).catch(() => {})
       },
 
       // ── List items ────────────────────────────────────
@@ -150,8 +150,8 @@ export const useStore = create(
       },
 
       async removeItem(listId, itemId) {
-        await api(`/lists/${listId}/items/${itemId}`, { method: 'DELETE' })
         set(s => ({ lists: s.lists.map(l => l.id === listId ? { ...l, items: l.items.filter(i => i.id !== itemId) } : l) }))
+        api(`/lists/${listId}/items/${itemId}`, { method: 'DELETE' }).catch(() => {})
       },
 
       restoreItem(listId, item) {
@@ -238,10 +238,10 @@ export const useStore = create(
       },
 
       async removeSet(listId, setId) {
-        await api(`/lists/${listId}/sets/${setId}`, { method: 'DELETE' })
         set(s => ({
           sets: { ...s.sets, [listId]: (s.sets[listId] || []).filter(st => st.id !== setId) },
         }))
+        api(`/lists/${listId}/sets/${setId}`, { method: 'DELETE' }).catch(() => {})
       },
 
       async addItemToSet(listId, setId, name, category = null) {
@@ -276,7 +276,6 @@ export const useStore = create(
       },
 
       async removeItemFromSet(listId, setId, itemId) {
-        await api(`/lists/${listId}/sets/${setId}/items/${itemId}`, { method: 'DELETE' })
         set(s => ({
           sets: {
             ...s.sets,
@@ -285,6 +284,7 @@ export const useStore = create(
             ),
           },
         }))
+        api(`/lists/${listId}/sets/${setId}/items/${itemId}`, { method: 'DELETE' }).catch(() => {})
       },
 
       // ── Recipes ───────────────────────────────────────
@@ -301,8 +301,8 @@ export const useStore = create(
       },
 
       async removeRecipe(id) {
-        await api(`/recipes/${id}`, { method: 'DELETE' })
         set(s => ({ recipes: s.recipes.filter(r => r.id !== id) }))
+        api(`/recipes/${id}`, { method: 'DELETE' }).catch(() => {})
       },
 
       // ── Household name ────────────────────────────────

@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, Component } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useStore } from './store/useStore'
 import LoginScreen from './screens/LoginScreen'
@@ -7,6 +7,25 @@ import ListScreen from './screens/ListScreen'
 import RecipesScreen from './screens/RecipesScreen'
 import HouseholdScreen from './screens/HouseholdScreen'
 import BottomNav from './components/BottomNav'
+
+class ErrorBoundary extends Component {
+  state = { error: null }
+  static getDerivedStateFromError(error) { return { error } }
+  render() {
+    if (this.state.error) return (
+      <div style={{ padding: 24, color: 'var(--text)' }}>
+        <p style={{ fontSize: 16, color: 'var(--text2)' }}>Something went wrong. Please reload the page.</p>
+        <button
+          onClick={() => this.setState({ error: null })}
+          style={{ marginTop: 16, padding: '10px 20px', borderRadius: 999, background: 'var(--accent)', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'Figtree,sans-serif', fontSize: 16, fontWeight: 700 }}
+        >
+          Try again
+        </button>
+      </div>
+    )
+    return this.props.children
+  }
+}
 
 function RequireAuth({ children }) {
   const household = useStore(s => s.household)
@@ -59,7 +78,9 @@ export default function App() {
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <AppRoutes />
+      <ErrorBoundary>
+        <AppRoutes />
+      </ErrorBoundary>
       <BottomNav />
     </div>
   )

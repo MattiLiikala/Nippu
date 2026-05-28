@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
 import SetsDrawer from './SetsDrawer'
@@ -105,7 +105,7 @@ export default function ListScreen() {
   const reorderListItems = useStore(s => s.reorderListItems)
   const updateListSectionOrder = useStore(s => s.updateListSectionOrder)
 
-  const setsForList = useStore(s => s.sets[id] ?? [])
+  const setsForList = useStore(s => s.sets[id]) ?? []
   const fetchSetsForList = useStore(s => s.fetchSetsForList)
 
   const list = lists.find(l => l.id === id)
@@ -173,17 +173,19 @@ export default function ListScreen() {
       : uncategorized),
   ]
 
+  const flatListIds = useMemo(() => flatList.map(e => e.id), [flatList])
+
   const activeItem = activeId && !activeId.toString().startsWith('sec:')
     ? list.items.find(i => i.id === activeId)
     : null
 
   // ── Handlers ──────────────────────────────────────────
 
-  const handleCheck = async (item) => {
+  const handleCheck = (item) => {
     if (removing === item.id) return
     setRemoving(item.id)
-    setTimeout(async () => {
-      await removeItem(list.id, item.id)
+    setTimeout(() => {
+      removeItem(list.id, item.id)
       setLastRemoved(item)
       setRemoving(null)
     }, 220)
@@ -398,7 +400,7 @@ export default function ListScreen() {
         autoScroll={{ layoutShiftCompensation: false }}
       >
         <div className="scroll-area" style={{ paddingTop: 8, paddingBottom: 120 }}>
-          <SortableContext items={flatList.map(e => e.id)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={flatListIds} strategy={verticalListSortingStrategy}>
             {flatList.map(entry => {
               if (entry.id === 'sec:') return <OtherSectionHeader key="sec:" />
               if (entry.type === 'section') return (

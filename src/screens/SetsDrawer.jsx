@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useStore } from '../store/useStore'
 import {
   DndContext, DragOverlay, MeasuringStrategy,
@@ -200,6 +200,8 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
       ? [{ id: 'sec:', type: 'section', name: null }, ...uncategorized]
       : uncategorized),
   ] : []
+
+  const flatListIds = useMemo(() => flatList.map(e => e.id), [flatList])
 
   const activeItem = activeId && !activeId.toString().startsWith('sec:')
     ? currentSet?.items.find(i => i.id === activeId)
@@ -501,7 +503,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
             ) : !currentSet ? (
               <p style={{ color: 'var(--text2)', fontSize: 16, padding: '16px 0' }}>No sets yet. Create one above.</p>
             ) : (
-              <SortableContext items={flatList.map(e => e.id)} strategy={verticalListSortingStrategy}>
+              <SortableContext items={flatListIds} strategy={verticalListSortingStrategy}>
                 {flatList.map(entry => {
                   if (entry.id === 'sec:') return <OtherSetSectionHeader key="sec:" />
                   if (entry.type === 'section') return (
