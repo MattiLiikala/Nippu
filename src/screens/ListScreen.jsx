@@ -420,7 +420,7 @@ export default function ListScreen() {
             })}
           </SortableContext>
 
-          {list.items.length === 0 && !lastRemoved && (
+          {list.items.length === 0 && removedHistory.length === 0 && (
             <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text2)', fontSize: 16, fontWeight: 400 }}>
               All done! Add items below.
             </div>

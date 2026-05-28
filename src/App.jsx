@@ -13,7 +13,7 @@ class ErrorBoundary extends Component {
   static getDerivedStateFromError(error) { return { error } }
   render() {
     if (this.state.error) return (
-      <div style={{ padding: 24, color: 'var(--text)' }}>
+      <div style={{ flex: 1, minHeight: 0, padding: 24, color: 'var(--text)' }}>
         <p style={{ fontSize: 16, color: 'var(--text2)' }}>Something went wrong. Please reload the page.</p>
         <button
           onClick={() => this.setState({ error: null })}
