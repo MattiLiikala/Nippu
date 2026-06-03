@@ -37,7 +37,7 @@ export default function LoginScreen() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <img
-            src="/icon-192.png"
+            src="/icon-transparentbg-192.png"
             alt="Nippu"
             style={{ width: 160, height: 160, objectFit: 'contain' }}
           />
