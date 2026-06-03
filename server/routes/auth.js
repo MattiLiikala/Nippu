@@ -46,18 +46,12 @@ router.patch('/rename', requireAuth, async (req, res) => {
   res.json({ token, name: newName })
 })
 
-router.post('/change-password', async (req, res) => {
-  const { name, oldPassword, newPassword } = req.body
-  if (!name?.trim() || !oldPassword || !newPassword) return res.status(400).json({ error: 'Missing fields' })
-
-  const row = await db.get('SELECT id, password_hash FROM households WHERE name = ?', [name.trim()])
-  if (!row) return res.status(404).json({ error: 'Household not found' })
-
-  const ok = await bcrypt.compare(oldPassword, row.password_hash)
-  if (!ok) return res.status(401).json({ error: 'Wrong password' })
+router.post('/change-password', requireAuth, async (req, res) => {
+  const { newPassword } = req.body
+  if (!newPassword) return res.status(400).json({ error: 'New password required' })
 
   const hash = await bcrypt.hash(newPassword, 10)
-  await db.run('UPDATE households SET password_hash = ? WHERE id = ?', [hash, row.id])
+  await db.run('UPDATE households SET password_hash = ? WHERE id = ?', [hash, req.household.householdId])
   res.json({ ok: true })
 })
 

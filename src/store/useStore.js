@@ -38,11 +38,8 @@ export const useStore = create(
         set({ token: null, household: null, lists: [], sets: {}, recipes: [], lastFetched: null, setsLastFetched: {} })
       },
 
-      async changePassword(oldPassword, newPassword) {
-        await api('/auth/change-password', {
-          method: 'POST',
-          body: { name: get().household.name, oldPassword, newPassword },
-        })
+      async changePassword(newPassword) {
+        await api('/auth/change-password', { method: 'POST', body: { newPassword } })
       },
 
       // ── Fetch all data ─────────────────────────────────

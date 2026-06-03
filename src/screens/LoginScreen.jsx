@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
+import { IconEye, IconEyeOff } from '../components/Icons'
 
 export default function LoginScreen() {
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
+  const [showPw, setShowPw] = useState(false)
   const [mode, setMode] = useState('join')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -63,15 +65,31 @@ export default function LoginScreen() {
               fontSize: 12, fontWeight: 900, color: 'var(--text2)',
               marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: '0.06em',
             }}>Password</label>
-            <input
-              className="input-field"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-              disabled={busy}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                className="input-field"
+                type={showPw ? 'text' : 'password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+                disabled={busy}
+                style={{ paddingRight: 48 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw(v => !v)}
+                style={{
+                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', padding: 4, borderRadius: 8,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center',
+                }}
+                tabIndex={-1}
+                aria-label={showPw ? 'Hide password' : 'Show password'}
+              >
+                {showPw ? <IconEyeOff /> : <IconEye />}
+              </button>
+            </div>
           </div>
 
           {error && (

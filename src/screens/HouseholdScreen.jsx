@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore'
+import { IconEye, IconEyeOff } from '../components/Icons'
 
 export default function HouseholdScreen() {
   const household = useStore(s => s.household)
@@ -18,8 +19,8 @@ export default function HouseholdScreen() {
   const [nameSaving, setNameSaving] = useState(false)
 
   const [editing, setEditing] = useState(false)
-  const [oldPw, setOldPw] = useState('')
   const [newPw, setNewPw] = useState('')
+  const [showNewPw, setShowNewPw] = useState(false)
   const [pwError, setPwError] = useState('')
   const [saving, setSaving] = useState(false)
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
@@ -40,11 +41,11 @@ export default function HouseholdScreen() {
   }
 
   const handleSave = async () => {
-    if (!oldPw || !newPw) { setPwError('Both fields required.'); return }
+    if (!newPw) { setPwError('New password required.'); return }
     setSaving(true); setPwError('')
     try {
-      await changePassword(oldPw, newPw)
-      setEditing(false); setOldPw(''); setNewPw('')
+      await changePassword(newPw)
+      setEditing(false); setNewPw(''); setShowNewPw(false)
     } catch (e) {
       setPwError(e.message)
     } finally {
@@ -129,24 +130,30 @@ export default function HouseholdScreen() {
           </p>
           {editing ? (
             <>
-              <input
-                className="input-field"
-                type="password"
-                value={oldPw}
-                onChange={e => setOldPw(e.target.value)}
-                placeholder="Current password"
-                style={{ marginBottom: 8 }}
-                disabled={saving}
-              />
-              <input
-                className="input-field"
-                type="password"
-                value={newPw}
-                onChange={e => setNewPw(e.target.value)}
-                placeholder="New password"
-                style={{ marginBottom: 8, borderColor: 'var(--accent)' }}
-                disabled={saving}
-              />
+              <div style={{ position: 'relative', marginBottom: 8 }}>
+                <input
+                  className="input-field"
+                  type={showNewPw ? 'text' : 'password'}
+                  value={newPw}
+                  onChange={e => setNewPw(e.target.value)}
+                  placeholder="New password"
+                  style={{ paddingRight: 48, borderColor: 'var(--accent)' }}
+                  disabled={saving}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw(v => !v)}
+                  style={{
+                    position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', padding: 4, borderRadius: 8,
+                    cursor: 'pointer', display: 'flex', alignItems: 'center',
+                  }}
+                  tabIndex={-1}
+                  aria-label={showNewPw ? 'Hide password' : 'Show password'}
+                >
+                  {showNewPw ? <IconEyeOff /> : <IconEye />}
+                </button>
+              </div>
               {pwError && (
                 <p style={{ fontSize: 12, color: 'oklch(0.55 0.18 25)', marginBottom: 8 }}>{pwError}</p>
               )}
@@ -154,7 +161,7 @@ export default function HouseholdScreen() {
                 <button className="btn-primary" style={{ padding: '12px 24px', width: 'auto', fontSize: 16, opacity: saving ? 0.7 : 1 }} onClick={handleSave} disabled={saving}>
                   {saving ? 'Saving…' : 'Save'}
                 </button>
-                <button className="btn-ghost" style={{ padding: '12px 24px', width: 'auto', fontSize: 16 }} onClick={() => { setEditing(false); setOldPw(''); setNewPw(''); setPwError('') }}>
+                <button className="btn-ghost" style={{ padding: '12px 24px', width: 'auto', fontSize: 16 }} onClick={() => { setEditing(false); setNewPw(''); setPwError(''); setShowNewPw(false) }}>
                   Cancel
                 </button>
               </div>
