@@ -12,11 +12,9 @@ export function IconLists({ active }) {
 export function IconRecipes({ active }) {
   const c = active ? 'var(--accent)' : 'var(--text2)'
   return (
-    <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round">
-      <path d="M8 3v18M8 3C8 3 6 6 6 9s2 4 2 4" />
-      <rect x="13" y="3" width="5" height="9" rx="2.5" />
-      <line x1="13" y1="15" x2="18" y2="15" />
-      <line x1="13" y1="18" x2="16" y2="18" />
+    <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <line x1="8" y1="3" x2="8" y2="21" />
     </svg>
   )
 }
@@ -24,9 +22,9 @@ export function IconRecipes({ active }) {
 export function IconHouse({ active }) {
   const c = active ? 'var(--accent)' : 'var(--text2)'
   return (
-    <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round">
-      <path d="M3 11L12 3l9 8" />
-      <rect x="7" y="14" width="10" height="7" rx="2" />
+    <svg className="nav-icon" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 13.5Q3 12 4.1 11L10.9 5Q12 4 13.1 5L19.9 11Q21 12 21 13.5V19Q21 21 19 21H5Q3 21 3 19Z" />
+      <path d="M10 21v-5h4v5" />
     </svg>
   )
 }

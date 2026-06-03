@@ -12,6 +12,7 @@ export default function LoginScreen() {
   const [busy, setBusy] = useState(false)
   const login = useStore(s => s.login)
   const createHousehold = useStore(s => s.createHousehold)
+  const dark = useStore(s => s.dark)
   const navigate = useNavigate()
 
   const handleSubmit = async () => {
@@ -39,7 +40,7 @@ export default function LoginScreen() {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <img
-            src="/icon-transparentbg-192.png"
+            src={dark ? '/icon-light-transparentbg-192.png' : '/icon-transparentbg-192.png'}
             alt="Nippu"
             style={{ width: 160, height: 160, objectFit: 'contain' }}
           />
