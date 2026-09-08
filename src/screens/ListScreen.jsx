@@ -136,16 +136,12 @@ export default function ListScreen() {
   // Clear undo history when switching lists
   useEffect(() => { setRemovedHistory([]) }, [id])
 
-  if (!list) return (
-    <div className="screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <p style={{ color: 'var(--text2)' }}>List not found.</p>
-    </div>
-  )
-
-  // Group items by category
+  // Group items by category. `list` can briefly be undefined right after
+  // login (household resolves before fetchAll populates `lists`), so every
+  // hook below must run unconditionally — guard the data, not the hooks.
   const grouped = {}
   const uncategorized = []
-  for (const item of list.items) {
+  for (const item of list?.items ?? []) {
     if (item.category) {
       (grouped[item.category] ??= []).push(item)
     } else {
@@ -156,7 +152,7 @@ export default function ListScreen() {
   for (const cat of Object.keys(grouped)) sortGroup(grouped[cat])
   sortGroup(uncategorized)
 
-  const savedOrder = list.section_order ? JSON.parse(list.section_order) : []
+  const savedOrder = list?.section_order ? JSON.parse(list.section_order) : []
   const presentCats = Object.keys(grouped)
   const sortedCats = [
     ...savedOrder.filter(cat => presentCats.includes(cat)),
@@ -178,6 +174,12 @@ export default function ListScreen() {
   ]
 
   const flatListIds = useMemo(() => flatList.map(e => e.id), [flatList])
+
+  if (!list) return (
+    <div className="screen" style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ color: 'var(--text2)' }}>List not found.</p>
+    </div>
+  )
 
   const activeItem = activeId && !activeId.toString().startsWith('sec:')
     ? list.items.find(i => i.id === activeId)
@@ -204,10 +206,15 @@ export default function ListScreen() {
   }
 
   const handleAddItem = async (e) => {
-    if (e.key === 'Enter' && inputVal.trim()) {
-      const val = inputVal.trim()
-      setInputVal('')
+    e.preventDefault()
+    const val = inputVal.trim()
+    if (!val) return
+    setInputVal('')
+    try {
       await addItem(list.id, val)
+    } catch (err) {
+      console.error('Failed to add item', err)
+      setInputVal(val)
     }
   }
 
@@ -426,7 +433,7 @@ export default function ListScreen() {
             </div>
           )}
 
-          <div className="add-row" onClick={() => inputRef.current?.focus()}>
+          <form className="add-row" onClick={() => inputRef.current?.focus()} onSubmit={handleAddItem}>
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round">
               <line x1="9" y1="4" x2="9" y2="14" /><line x1="4" y1="9" x2="14" y2="9" />
             </svg>
@@ -434,10 +441,10 @@ export default function ListScreen() {
               ref={inputRef}
               value={inputVal}
               onChange={e => setInputVal(e.target.value)}
-              onKeyDown={handleAddItem}
               placeholder="Add item…"
+              enterKeyHint="done"
             />
-          </div>
+          </form>
 
           <div style={{ marginTop: 10 }}>
             {addingSection ? (

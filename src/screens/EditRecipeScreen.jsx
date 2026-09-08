@@ -18,10 +18,11 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
   const [confirmRemove, setConfirmRemove] = useState(false)
 
   const addIng = (e) => {
-    if (e.key === 'Enter' && newIng.trim()) {
-      setIngredients(prev => [...prev, newIng.trim()])
-      setNewIng('')
-    }
+    e.preventDefault()
+    const val = newIng.trim()
+    if (!val) return
+    setIngredients(prev => [...prev, val])
+    setNewIng('')
   }
 
   const handleSave = async () => {
@@ -146,12 +147,12 @@ export default function EditRecipeScreen({ recipe, onBack, onSave, onRemove }) {
                 </button>
               </div>
             ))}
-            <div className="add-row" style={{ marginTop: 8 }}>
+            <form className="add-row" style={{ marginTop: 8 }} onSubmit={addIng}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round">
                 <line x1="8" y1="3" x2="8" y2="13" /><line x1="3" y1="8" x2="13" y2="8" />
               </svg>
-              <input value={newIng} onChange={e => setNewIng(e.target.value)} onKeyDown={addIng} placeholder="Add ingredient…" />
-            </div>
+              <input value={newIng} onChange={e => setNewIng(e.target.value)} placeholder="Add ingredient…" enterKeyHint="done" />
+            </form>
           </>
         ) : (
           <textarea

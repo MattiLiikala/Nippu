@@ -228,10 +228,15 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
   }
 
   const handleAddItemToSet = async (e) => {
-    if (e.key === 'Enter' && newItemVal.trim() && currentSet) {
-      const val = newItemVal.trim()
-      setNewItemVal('')
+    e.preventDefault()
+    const val = newItemVal.trim()
+    if (!val || !currentSet) return
+    setNewItemVal('')
+    try {
       await addItemToSet(listId, currentSet.id, val)
+    } catch (err) {
+      console.error('Failed to add item to set', err)
+      setNewItemVal(val)
     }
   }
 
@@ -591,7 +596,7 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                     </button>
                   )}
                 </div>
-                <div className="add-row">
+                <form className="add-row" onSubmit={handleAddItemToSet}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--text2)" strokeWidth="2" strokeLinecap="round">
                     <line x1="8" y1="3" x2="8" y2="13" /><line x1="3" y1="8" x2="13" y2="8" />
                   </svg>
@@ -599,10 +604,10 @@ export default function SetsDrawer({ listId, onClose, onAddItems }) {
                     ref={newItemRef}
                     value={newItemVal}
                     onChange={e => setNewItemVal(e.target.value)}
-                    onKeyDown={handleAddItemToSet}
                     placeholder="Add item to set…"
+                    enterKeyHint="done"
                   />
-                </div>
+                </form>
               </div>
             )}
           </div>
